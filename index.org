@@ -1,0 +1,11 @@
+#+title: Notes on Machine Learning Courses
+#+OPTIONS: toc:nil
+
+* Coursera, Stanford: Machine Learning, 2019
+- [[./ml.html][Full Course Notes]]
+* Coursera, DeepLearning.AI: Deep Learning Specialization, 2020
+- [[./course1nndl.html][Neural Networks and Deep Learning]]
+- [[./course2reg.html][Improving Deep Neural Networks: Hyperparameter Tuning, Regularization and Optimization]]
+- [[./course3struct.html][Structuring Machine Learning Projects]]
+- [[./course4conv.html][Convolutional Neural Networks]]
+- [[./course5seq.html][Sequential Models]]

@@ -1,0 +1,482 @@
+#+TITLE: Notes on Coursera, Deep Learning Specification, Improving Deep Neural Networks: Hyperparameter Tuning, Regularization and Optimization, 2020
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+
+
+* Introduction
+
+This week: more practical aspects. 
+
+Applied machine learning is a highly iterative process. Almost impossible to initially guess the right values for #layers, #hidden units, learning rates, activation functions, ...
+
+Intuitions for hyperparameters from one application area often do not transfer well to other areas. 
+
+Divide data into development set, cross-validation or dev set, and test set.
+
+Previously in machine learning: 60/20/20 best practice. Up to 10k examples these ratios are good. In modern 'big data era' the trend is to increase the training set size. For example, 1,000,000 / 10,000 / 10,000 i.e. ~98/1/1 
+
+Recently, mismatched train/test set distributions. Rule of thumb: dev set and test set still from the same distribution. Mismatch is (I think) not a goal in itself but sometimes necessary to have enough training data. 
+
+Sometimes teams only use train/test or train/dev sets. 
+
+* Week 1 
+
+** Bias and Variance
+
+There is more nuance to bias/variance than you might expect! 
+
+We're talking less about trade-off, tho. 
+
+In general: High bias leads to underfitting, high variance leads to overfitting. 
+
+Two key measure to look at: Training set error, Dev set error. Example. 1%/11%. Looks like overfitting, i.e. high variance. Example. 15%/16% looks like underfitting, i.e. high bias.
+
+|                 | high variance | high variance | high bias & variance | low bias & variance |
+|-----------------+---------------+---------------+----------------------+---------------------|
+| train set error |            1% |           15% |                  15% |                0.5% |
+| dev set error   |           11% |           16% |                  30% |                  1% |
+
+human roughly 0%. More generally, the optimal (Bayes) error is close to 0% IN THIS CASE OF looking at cats v. dogs.
+
+How much higher the error goes from the training to the dev set gives you an idea about high variance.
+
+** Basic Recipe for Machine Learning
+
+Ask: 
+1) High bias? check Training data performance. If yes, try a bigger network. Or train longer. Or try a different network architecture. More training data doesn't help much.
+2) High Variance? Check dev set performance. If yes, try more data, use regularization, or try a different network architecture.
+Done.
+
+In earlier days, there was much talk about bias variance tradeoff. In the modern era, a bigger network and more data almost always reduces your bias and variance. This has been one of the big reasons deep learning has been so successful recently.
+
+** Regularization
+
+If you suspect overfitting, first thing to try is regularization.
+
+Add to the logistic regression cost function a regularization term lambda:
+
+$$J(w,b) = \frac{1}{m} \sum_{i=1}^m \mathcal{l}(\hat{y}^{(i)},y^{(i)}) + \frac{\lambda}{2m} ||w||^2_2$$
+
+$L_2$ regularization
+
+$$||w||^2_2 = \sum_{j=1}^{n_x} w_j^2 = w^Tw$$
+
+We don't regularize $b$, it just doesn't matter as much.
+
+$L_1$ regularization is $||w||_1$, then $w$ will be sparse. $L_2$ is used more often.
+
+$\lambda$ is the regularization parameter. 
+
+*** Regularization in Neural Networks
+
+Add a lambda term to the cost function as well:
+
+$$J(W^^{[1]},b^{[1]},\dots,\W^{[l]},b^{[l]}) = \frac{1}{m}\mathcal{L}(\hat{y}^{(i)},y^{[i]}) + \frac{\lambda}{2m} \sum^{l}_{l=1}||w^{[l]}||^2_F$$
+$$||w^{[l]}||^2_F = \sum_{i=1}^{n^{[l]}} \sum_{j=1}^{n^{[l-1]}} (w^{[l]}_{i,j})^2$$
+
+Then
+$$dW^{[l]} = \dots + \frac{\lambda}{m} W^{[l]}$$
+
+Alternative name is /weight decay/.
+
+** Why does Regularization Prevent Overfitting?
+
+It puts a dampener on the weights: Even if the predictions are basically perfect, high weights still contribute to the loss function we are trying to minimize. To the effect that many weights are almost zero. So basically, we have a simpler network which is less prone to overfitting.
+
+Another attempt: for small weights you get roughly linear activation functions (e.g. tanh is roughly linear around 0), which makes for a much simpler network (that basically just implements a single logistic regression).
+
+** Dropout Regularization
+
+Another very powerful regularization is dropout. The idea is to, on each batch of training examples or per iteration, 'drop out' different nodes and completely ignore them in the training process. 
+
+How to implement? Create a boolean matrix with random < keep_probability, so you zero out random elements when multiplying with activation matrix. This is called inverted dropout technique. 
+
+#+BEGIN_SRC python
+d3 = np.random.rand(a3.shape[0],a3.shape[1]) < keep_prob
+a3 = np.multiply(a3,d3)
+#+END_SRC
+
+You don't use drop out at test time. But why does it work?
+
+** Why does Drop-out work?
+
+With dropout, sometimes the inputs get eliminated. This way, a single input won't have as much influence. Drop-out has a similar effect to $L_2$-regularization. So the network has to spread out weights. The keep_prob can also vary per layer.
+
+Downside: Cost function isn't well defined anymore, harder to calculate. Check that everything is working before adding drop-out!
+
+** Other Regularization Methods
+
+- Add to your training data by adding additional, distorted examples, i.e. mirroring, stretching, rotating images etc.
+- Early stopping stops the training early, before dev and training error diverge too hard (if at all). Has the downside that ...
+
+Machine Learning problem can be seen as optimizing J, while not overfitting. If these tasks are seen independent that's called orthogonalization. Now, Early stopping couples both tasks!  
+
+** Normalizing Inputs
+
+- Subtract the mean 
+- Normalize variance: divide by standard deviation.
+
+$$\sigma^2 = \frac{1}{m} \sum_{i=1}^m x^{(i)}**2$$
+
+Why normalize inputs? The values for the parameters will take on very different values, which can negatively affect gradient descent. 
+
+** Vanishing / Exploding Gradients
+
+This is a prominent problem. Suppose you have a quite deep network with parameters $W^{[1]}, \dots, W^{[l]}$ and a linear activation function $g(z) = z$. Then $\hat{y} = W^{[l]}\dots W^{[1]}x$. With 
+$$W^{[1]} = \dots = W^{[l]} = \begin{bmatrix}1.5 & 0 \\ 0 & 1.5 \end{bmatrix}$$
+we have $\hat{y} = 1.5^{[L-1]}x$, so y explodes. Similarly, with 
+$$W^{[1]} = \dots = W^{[l]} = \begin{bmatrix}0.5 & 0 \\ 0 & 0.5 \end{bmatrix}$$
+$\hat{y}$ will vanish. 
+
+With weights a little bit bigger than 1 the activation increases exponentially, with smaller with 1 the activations will vanish exponentially. Similarly, the *gradients* are affected. 
+
+For a long time, this problem was a huge barrier to success.
+
+** Weight Initialization for Deep Networks
+
+A partial solution to the vanishing/exploding gradient problem: carefully initializing your weights. 
+
+if $z = w_1x + \dots + w_nx_n$, you'd want for larger $n$ have smaller $w_i$. For example, set $Var(w_i) = 1/n$. E.g. for ReLU:
+
+#+BEGIN_SRC python
+Wl = np.random.randn(shape) * np.sqrt(2/(nl1))
+#+END_SRC
+Where ~Wl~ is $W^{[l]}$ and ~nl1~ is $n^{[l-1]}$.
+
+Other formulas apply for other activation functions, here completely without justification except /it works/.
+
+This doesn't /solve/ the problem, but reduces it. 
+
+** Numerical approximation of gradients
+
+Gradient checking helps you get all the details right. First, numerically approximate the gradient. The following gives you an approximation:
+
+$$\frac{f(\theta + \epsilon) - f(\theta - \epsilon}{2\epsilon}} \sim g(\theta)$$
+
+** Gradient Checking
+
+This technique helped Andrew tons of times.
+
+Take $W^{[i]},b^{[i]}$ and reshape into big vector $\theta$. Take $dW^{[i]},db^{[i]}$ and reshape into big vector $d\theta$.
+
+Question: Is $d\theta$ the gradient of $J$? (That's grad check)
+
+#+BEGIN_SRC python
+for each i:
+  d_theta_approx[i] = (J(theta_1,...,theta_i+epsilon,...,theta_k) - J(theta_1,...,theta_i-epsilon,...,theta_k)) / (2*epsilon)
+
+Then check euclidean distance between two vectors $d\theta_{app}$ and $d\theta$. It should be around epsilon! E.g. $\epsilon = 10^{-7}$ then $10^{[-5]}$ ok, $but 10^{[-3]}$ bad!
+
+But how to actually implement this son of a bitch?
+
+** Gradient Checking Implementation Notes
+
+- Don't use in training - only to debug.
+- Remember regularization!
+- Doesn't work together with dropout. Use separately.
+- Run at random initialization and also maybe later again.
+
+** Notes from the programming exercise
+
+In general, initializing all the weights to zero results in the network failing to break symmetry. This means that every neuron in each layer will learn the same thing, and you might as well be training a neural network with $n^{[l]}=1$ for every layer, and the network is no more powerful than a linear classifier such as logistic regression. 
+
+**What you should remember**:
+- The weights $W^{[l]}$ should be initialized randomly to break symmetry. 
+- It is however okay to initialize the biases $b^{[l]}$ to zeros. Symmetry is still broken so long as $W^{[l]}$ is initialized randomly.
+
+**In summary**:
+- Initializing weights to very large random values does not work well. 
+- Hopefully intializing with small random values does better. The important question is: how small should be these random values be? Lets find out in the next part!
+
+**What you should remember from this notebook**:
+- Different initializations lead to different results
+- Random initialization is used to break symmetry and make sure different hidden units can learn different things
+- Don't intialize to values that are too large
+- He initialization works well for networks with ReLU activations.
+
+**Observations**:
+- The value of $\lambda$ is a hyperparameter that you can tune using a dev set.
+- L2 regularization makes your decision boundary smoother. If $\lambda$ is too large, it is also possible to "oversmooth", resulting in a model with high bias.
+
+**What is L2-regularization actually doing?**:
+
+L2-regularization relies on the assumption that a model with small weights is simpler than a model with large weights. Thus, by penalizing the square values of the weights in the cost function you drive all the weights to smaller values. It becomes too costly for the cost to have large weights! This leads to a smoother model in which the output changes more slowly as the input changes. 
+
+**What you should remember** -- the implications of L2-regularization on:
+- The cost computation:
+  - A regularization term is added to the cost
+- The backpropagation function:
+  - There are extra terms in the gradients with respect to weight matrices
+- Weights end up smaller ("weight decay"): 
+  - Weights are pushed to smaller values.
+
+Note: the ipython notebook has a very good illustration of dropout regularization, with videos.
+
+`When you shut some neurons down, you actually modify your model. The idea behind drop-out is that at each iteration, you train a different model that uses only a subset of your neurons. With dropout, your neurons thus become less sensitive to the activation of one other specific neuron, because that other neuron might be shut down at any time. 
+
+**Note**:
+- A **common mistake** when using dropout is to use it both in training and testing. You should use dropout (randomly eliminate nodes) only in training. 
+- Deep learning frameworks like [tensorflow](https://www.tensorflow.org/api_docs/python/tf/nn/dropout), [PaddlePaddle](http://doc.paddlepaddle.org/release_doc/0.9.0/doc/ui/api/trainer_config_helpers/attrs.html), [keras](https://keras.io/layers/core/#dropout) or [caffe](http://caffe.berkeleyvision.org/tutorial/layers/dropout.html) come with a dropout layer implementation. Don't stress - you will soon learn some of these frameworks.
+
+**What you should remember about dropout:**
+- Dropout is a regularization technique.
+- You only use dropout during training. Don't use dropout (randomly eliminate nodes) during test time.
+- Apply dropout both during forward and backward propagation.
+- During training time, divide each dropout layer by keep_prob to keep the same expected value for the activations. For example, if keep_prob is 0.5, then we will on average shut down half the nodes, so the output will be scaled by 0.5 since only the remaining half are contributing to the solution. Dividing by 0.5 is equivalent to multiplying by 2. Hence, the output now has the same expected value. You can check that this works even when keep_prob is other values than 0.5.  
+
+**What we want you to remember from this notebook**:
+- Regularization will help you reduce overfitting.
+- Regularization will drive your weights to lower values.
+- L2 regularization and Dropout are two very effective regularization techniques.
+
+Backpropagation computes the gradients $\frac{\partial J}{\partial \theta}$, where $\theta$ denotes the parameters of the model. $J$ is computed using forward propagation and your loss function.
+
+Because forward propagation is relatively easy to implement, you're confident you got that right, and so you're almost  100% sure that you're computing the cost $J$ correctly. Thus, you can use your code for computing $J$ to verify the code for computing $\frac{\partial J}{\partial \theta}$. 
+
+Let's look back at the definition of a derivative (or gradient):
+$$ \frac{\partial J}{\partial \theta} = \lim_{\varepsilon \to 0} \frac{J(\theta + \varepsilon) - J(\theta - \varepsilon)}{2 \varepsilon} \tag{1}$$
+
+If you're not familiar with the "$\displaystyle \lim_{\varepsilon \to 0}$" notation, it's just a way of saying "when $\varepsilon$ is really really small."
+
+We know the following:
+
+- $\frac{\partial J}{\partial \theta}$ is what you want to make sure you're computing correctly. 
+- You can compute $J(\theta + \varepsilon)$ and $J(\theta - \varepsilon)$ (in the case that $\theta$ is a real number), since you're confident your implementation for $J$ is correct. 
+
+**Note** 
+- Gradient Checking is slow! Approximating the gradient with $\frac{\partial J}{\partial \theta} \approx  \frac{J(\theta + \varepsilon) - J(\theta - \varepsilon)}{2 \varepsilon}$ is computationally costly. For this reason, we don't run gradient checking at every iteration during training. Just a few times to check if the gradient is correct. 
+- Gradient Checking, at least as we've presented it, doesn't work with dropout. You would usually run the gradient check algorithm without dropout to make sure your backprop is correct, then add dropout. 
+
+Congrats, you can be confident that your deep learning model for fraud detection is working correctly! You can even use this to convince your CEO. :) 
+
+**What you should remember from this notebook**:
+- Gradient checking verifies closeness between the gradients from backpropagation and the numerical approximation of the gradient (computed using forward propagation).
+- Gradient checking is slow, so we don't run it in every iteration of training. You would usually run it only to make sure your code is correct, then turn it off and use backprop for the actual learning process. 
+
+* Week 2 
+
+** Notes from the Python Notebook
+
+**What you should remember**:
+- The difference between gradient descent, mini-batch gradient descent and stochastic gradient descent is the number of examples you use to perform one update step.
+- You have to tune a learning rate hyperparameter $\alpha$.
+- With a well-turned mini-batch size, usually it outperforms either gradient descent or stochastic gradient descent (particularly when the training set is large).
+
+The slice notation specifies a start and end value [start:end] and copies the list from start up to but not including end.
+
+**What you should remember**:
+- Shuffling and Partitioning are the two steps required to build mini-batches
+- Powers of two are often chosen to be the mini-batch size, e.g., 16, 32, 64, 128.
+
+**Note** that:
+- The velocity is initialized with zeros. So the algorithm will take a few iterations to "build up" velocity and start to take bigger steps.
+- If $\beta = 0$, then this just becomes standard gradient descent without momentum. 
+
+**How do you choose $\beta$?**
+
+- The larger the momentum $\beta$ is, the smoother the update because the more we take the past gradients into account. But if $\beta$ is too big, it could also smooth out the updates too much. 
+- Common values for $\beta$ range from 0.8 to 0.999. If you don't feel inclined to tune this, $\beta = 0.9$ is often a reasonable default. 
+- Tuning the optimal $\beta$ for your model might need trying several values to see what works best in term of reducing the value of the cost function $J$.
+
+**What you should remember**:
+- Momentum takes past gradients into account to smooth out the steps of gradient descent. It can be applied with batch gradient descent, mini-batch gradient descent or stochastic gradient descent.
+- You have to tune a momentum hyperparameter $\beta$ and a learning rate $\alpha$.
+
+* Week 3 Hyperparameter tuning, Regularization and Optimization
+  
+** Tuning Process
+
+Soo many Hyperparameters! How to deal with them? 
+
+\alpha is probably the most important. \beta can usually be set to 0.9. The numbers of layers and the learning rate decay (did we fix that parameter somewhere yet?) are also important. If you try out random values, don't use a grid-based strategy, instead really sample random values. Go from maybe coarser to progressively finer. 
+
+** Appropriate Scale for Hyperparameters
+   
+Try random values on a log scale! e.g.
+
+#+BEGIN_SRC python
+r = -4 * np.random.rand()
+alpha = 10**r
+#+END_SRC
+
+What about \beta? Usually $\beta \in [0.9 \dots 0.999]$. Sample $r \in [-3,-1]$, then $1-\beta = 10^r$.
+
+** Hyperparameter Tuning in Practice: Pandas vs. Caviar
+
+How to best divide up the limited resources? 
+
+Babysitting one model (Panda approach) vs. training many models in parallel (Caviar strategy) 
+
+** Normalizing Activations in a Network
+   
+Batch normalization was one of the most important developments. What is it? 
+
+Remember that normalizing your input features can speed up learning. In a deeper model, you can normalize $z$ or $a$. Normalizing $z$ will be recommended.
+
+Given some intermediate values $z^{[l](i)}$, normalize them!
+
+$$z_{norm}^{(i)} = \frac{z^{[i)} - \mu}{\sqrt{\sigma^2 + epsilon}}$$
+
+You don't always one mean zero and variance one but instead
+
+$$\widetilde{z}^{(i)} = \gamma z^{(i)}_{norm} + \beta$$,
+
+where \gamma and \beta are learnable parameters. Use $\widetilde{z}$ instead of $z$ to propagate further. 
+
+** Fitting Batch Norm into a Neural Network
+
+Batch norm step happens between computing $z$ and computing $a$, obviously. 
+
+Parameters: $W^{[i]}, b^{[i]}, \beta^{[i]}, \gamma^{[i]}$. Update \beta and \gamma with gradient descent like you would with $W$ and $b$. Implementing batch norm is usually done through frameworks.
+
+In practice, batch norm is done with mini-batches. That is, you update all the parameters after one mini-batch. 
+
+Previously, we had $b$ as a parameter. But it will get canceled out by batch norm! So we just get rid of it. $\beta$ takes its function. 
+
+How to implement? In each hidden layer, use batch norm to replace $Z^{[l]}$ with $\widetilde^{[l]}$. Use backprop to compute $dW^{[l]}, db^{[l]}, d\beta^{[l]}, d\gamma{[l]}$, but $b$ is in fact scrapped.
+
+** Why does Batch Norm Work?
+
+It's doing a similar thing to scaling your inputs, but on the level of activations. But that's only part of the reason. 
+
+If your training set is very biased (e.g. black cats), so it doesn't generalize well to other sets (e.g. colored cats) with a /covariate shift/, this can pose a problem to your network. Basically, the underlying function changes. If you only look at say, the third hidden layer, then the activations of the previous layers are its input. But the inputs are changing all the time and are suffering from covariate shifts apparently. Batch norm counteracts this effect by ensuring that the mean and variance will remain somewhat constant governed by \beta and \gamma parameters. The earlier layers don't get to shift around as much. 
+
+In addition, it adds some noise to each hidden layer's activations, providing a slight regularization effect. 
+
+In total, it speed sup learning quite a bit.
+
+** Batch Norm at Test Time
+
+During training, you are processing batches. But what about test time where you might have only few examples?
+
+Use \mu, \sigma^2 using exponentially weighted average across mini-batches. Save \mu and \sigma^2 values from mini-batches per layer. At test time, compute $z_{norm}$ with the exponentially weighted average of values from mini-batches. This process in practice is pretty robust. 
+
+** Softmax Regression
+
+Please note that in the next video at 4:30, the text for the softmax formulas mixes subscripts "j" and "i", when the subscript should just be the same (just "i") throughout the formula.
+
+So the formula for softmax should be:
+a[L]=eZL∑i=i4tia^{[L]} = \frac{e^{Z^{L}}}{\sum_{i=i}^{4} t_{i} }a[L]=∑i=i4​ti​
+eZL​
+
+So far, we just looked at binary clarification. Softmax regression is a generalization of logistic regression able to recognize any number of classes. 
+
+$C$: #classes. 
+
+Softmax gives you $P(y=i|x)$ for all output classes. 
+
+In layer $L$, use the softmax activation function:
+
+$$t = e^{z^{[L]}}: (4,1)$$
+$$a^{[l]} = \frac{e^{Z^L}}{\sum_{i=1}^C t_i}$$
+
+summarize as 
+
+$$a^{[l]} = g^{[l]}(z^{[l]})$$
+
+Unusual: takes (C,1) vector as input and outputs (C,1) vector, too. 
+
+** Training a Softmax Classifier
+
+Softmax comes from contrast to hard max. If $C=2$, softmax reduces to logistic regression. 
+
+Loss function? Suppose that $C=4$ and
+
+$$y = \begin{bmatrix}0 \\ 1 \\ 0 \\ 0 \end{bmatrix}, \hat{y} = \begin{bmatrix} 0.3 \\ 0.2 \\ 0.1 \\ 0.4 \end{bmatrix} $$
+
+$$\mathcal{L}(\hat{y},y) = - \sum_{j=1}^C y_j\log{\hat{y}_j}$$
+
+reduces to $-\log{\hat{y}_2}$. So larger $\hat{y}_2$ score better. This, btw, results in some form of maximum likelihood estimation. 
+
+Then we have the matrix $Y$ as 
+
+$$Y = [y^{(1)} \dots y^{(m)}] = \begin{bmatrix} 0 & \dots & 1 \\1 & \dots & 0 \\ 0 & \dots & 0 \\ 0 & \dots & 0   \end{bmatrix}: (4,m)$$
+
+Then the derivative is
+
+$$\frac{\partial}{dz^{[L]}}\mathcal{L} = \hat{y} - y: (4,1)$$
+
+Usually, the frameworks take care for you of the backprop process. You need to get the forward pass right, though. Let's look at some!
+
+** Deep Learning Frameworks
+
+Good thing to learn to implement from almost scratch! Fortunately though, there are frameworks to help you along the way. 
+
+Criteria for choice here:
+- Ease of programming'
+- Running speed
+- Open source, good governance. How much do you trust that a framework will remain open source? 
+
+** Tensorflow
+
+Motivation:
+
+$$J(w) = w^2 - 10w + 25$$
+
+#+BEGIN_SRC python
+  import numpy as np
+  import tensorflow as tf
+  w = tf.Variable(0,dtype=tf.float32)
+  # cost = tf.add(tf.add(w**2,tf.multiply(-10.,w)),25)
+  cost = w**2 - 10*w + 25
+  train = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
+  init = tf.global_variables_initializer()
+  session = tf.Session()
+  session.run(init)
+  print(session.run(w))
+  for i in range(1000):
+    session.run(train)
+  print(session.run(w))
+#+END_SRC
+
+Add data now:
+#+BEGIN_SRC python
+  w = tf.Variable(0,dtype=tf.float32)
+  x = tf.placeholder(tf.float32, [3,1])
+  coefficients = np.array([[1.],[-10.], [25.]])
+  cost = x[0][0]*w**2 + x[1][0]*w + x[2][0]
+  train = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
+  init = tf.global_variables_initializer()
+  session = tf.Session()
+  session.run(init)
+  print(session.run(w))
+  for i in range(1000):
+    session.run(train, feed_dict={x:coefficients})
+  print(session.run(w))
+#+END_SRC
+
+A placeholder is a variable whose value you assign later. 
+
+** Notes from the Notebook
+
+We'll be using Tensorflow 1! But later also Keras, which is more similar to Tensorflow 2's syntax. 
+
+Writing and running programs in TensorFlow has the following steps:
+
+1. Create Tensors (variables) that are not yet executed/evaluated. 
+2. Write operations between those Tensors.
+3. Initialize your Tensors. 
+4. Create a Session. 
+5. Run the Session. This will run the operations you'd written above. 
+
+Therefore, when we created a variable for the loss, we simply defined the loss as a function of other quantities, but did not evaluate its value. To evaluate it, we had to run `init=tf.global_variables_initializer()`. That initialized the loss variable, and in the last line we were finally able to evaluate the value of `loss` and print its value.
+
+Great! To summarize, **remember to initialize your variables, create a session and run the operations inside the session**. 
+
+**To summarize, you how know how to**:
+1. Create placeholders
+2. Specify the computation graph corresponding to operations you want to compute
+3. Create the session
+4. Run the session, using a feed dictionary if necessary to specify placeholder variables' values.
+
+**What you should remember**:
+- Tensorflow is a programming framework used in deep learning
+- The two main object classes in tensorflow are Tensors and Operators. 
+- When you code in tensorflow you have to take the following steps:
+    - Create a graph containing Tensors (Variables, Placeholders ...) and Operations (tf.matmul, tf.add, ...)
+    - Create a session
+    - Initialize the session
+    - Run the session to execute the graph
+- You can execute the graph multiple times as you've seen in model()
+- The backpropagation and optimization is automatically done when running the session on the "optimizer" object.

@@ -1,0 +1,353 @@
+#+TITLE: Notes on Coursera, Deep Learning Specification, Structuring Machine Learning Projects, 2020
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+
+
+* Week 1 Structuring Machine Learning Projects
+
+How best to spend your time on a project? Don't go off into the wrong direction!
+
+** Orthogonalization
+   
+So much stuff to tune! Good engineers know what to tune. You want to tune only in one dimension for optimal control, e.g. only speed, angle of steering etc. for a car. 
+
+- Fit training set well on cost function
+  - Bigger network
+  - Adam
+  - ...
+- Fit dev set well on cost function
+  - Regularization
+  - Bigger training set
+- Fit test set well on cost function
+  - Bigger dev set
+- Performs well in real world
+  - Change dev set or cost function
+
+Andres does not use early stopping. It is not orthogonalized - it affects both training set and dev set performance. 
+
+How to diagnose what's the bottleneck to your system's performance?
+
+** Single Number Evaluation Metric
+
+A single number quickly tells whether we improve trying new things. 
+
+Precision: TP/(FP+TP)
+Recall: TP/(FN+TP)
+
+If two classifiers don't agree on both metrics, what do? Maybe use F1 score: 2/(1/P + 1/R) (harmonic mean). This gives you a single number evaluation metric. 
+
+** Satisficing and Optimizing Metrics
+
+If you have some metrics, it might be hard to press them into one single number. What helps is to have satisficing metrics, i.e. binary yes/no, only accept yes, and optimizing metrics, from which you pick the best one.
+
+Example: trigger words for voice activation, e.g. hey google. Maximize accuracy (optimizing), in case you have at most 1 false positive every 24 hours (satisficing)
+
+** Train/dev/test Distribution
+
+dev set is sometimes also called cross validation set. 
+
+Suppose you have data from:
+- US
+- UK
+- Europe
+- South America
+- India
+- ...
+
+Have dev and test set from the same distribution! That is, do not divide by region. Instead, randomly shuffle data first and then divide.
+
+** Size of Dev and Test Set
+
+Old way: 70/30 Train/Test, 60/20/20 Train/Dev/Test
+
+T'was pretty reasonable back in ye olden days with up to 10,000 training examples! But in the modern era, you have so much more training data. So you might 98/1/1 train/dev/test. 
+
+Set you test set big enough to give high confidence in the overall performance of your system. The dev set should not be your test set! 
+
+Train set: Learn parameters, dev set: Learn Hyperparameters, test set: Evaluate!
+
+** When to Change dev/test sets and Metrics
+
+Metric: Classification Error
+
+Algorithm A: 3% Error, but shows pornographic images!
+Algorithm B: 5% Error
+
+$$ E = \frac{1}{m_{dev}} \sum^{m_{dev}}_{i=1} \mathcal{I}\{y^{(i)}_{pred} \not= y^{(i)}\} $$
+
+doesn't cut it! Add weights $w$:
+$$w = \begin{cases}1: & x^{(i)} \text{ is non-porn } \\ 10: & x^{(i)} \text{ if non-porn}\end{cases}$$
+And use instead:
+$$ E = \frac{1}{\sum_i w^{(i)}} \frac{1}{m_{dev}} \sum^{m_{dev}}_{i=1} w^{(i)} \mathcal{I}\{y^{(i)}_{pred} \not= y^{(i)}\} $$
+
+Two distinct steps:
+1. Define a metric to evaluate classifiers (Place target)
+2. How to do well on this metric (Aim and shoot at target)
+
+Two completely separate problems!
+
+Sometimes the real world application is nothing like your test/dev sets (e.g. user provided images) 
+
+** Why Human-level Performance?
+
+In some areas, machines can compete with humans. Accuracy can surpass human level performance and asymptotically increase towards Bayes optimal error. Often, progress is quite fast until it hits human level performance. After that, progress slows down significantly. 
+
+So long as ML is worse than humans, you can:
+- Get labeled data from humans
+- Gain insight from manual error analysis: why did a person get this right?
+- better analysis of bias/variance
+
+** Avoidable Bias
+
+Human level performance as a proxy Bayes optimal.
+
+Large training error (compared to human error): Focus on reducing bias.  
+Low training error (compared to human error), but larger dev error: Focus on reducing variance.
+
+*Avoidable Bias*: Difference between Bayes error and Training error. 
+
+*Variance*: Difference between Training error and dev error.
+ 
+** Understanding Human-level Performance
+
+Human-level error is sometimes used as a proxy for Bayes error.
+Example: Medical image
+a. Typical human 3%
+b. Typical doctor 1%
+c. Experienced doctor .7%
+d. Team of experienced doctors .5%
+
+What is "human-level" error? Bayes \leq .5%. But so long as you surpass a typical doctor, you might get away with equating human-level to the doctor's performance. 
+
+Example. Say Training Error 5%, Dev error 6%. Human error 1/.7/.5%. Avoidable bias 4-4.5%, variance 1%. Focus on reducing bias.
+
+But if the training error is 1%, dev error is 5%, then the variance is 4%, so focus on the variance.
+
+If the training error is .5%, and the dev error .8%, then it really matters what you declare as human-level performance. 
+
+** Surpassing Human-level Performance
+
+Some problem areas are better for ML:
+
+- Online advertising
+- Product Recommendations (REALLY?)
+- Logistics
+- Loan approvals
+
+These usually have lots of data, aren't natural perception, and enjoy structured data. 
+
+Some
+- Speech recognition
+- Image recognition
+- Medical recognition 
+tasks perform above human-level performance. 
+
+** Improving Your Model Performance
+
+The two fundamental assumptions of supervised learning:
+1. You can fit the training set pretty well. \rightarrow Avoidable bias
+   - Train bigger model, 
+   - Train longer 
+   - better optimization algorithms like momentum, RMSProp, Adam, 
+   - NN architecture/hyperparameters search (RNN, CNN).
+2. The training set performance generalized well to dev/test set. \rightarrow Variance.
+   - More data,
+   - regularization, l_2, dropout etc
+   - NN architecture search
+
+** Andrej Karpathy
+
+Unsupervised Learning hasn't delivered yet, compared to supervised learning. A lot of people are still deep believers, though! Long term future of AI? Field will split into two trajectories. First will applying stuff better and better. Second will be more Generalized AI. The divide&conquer approach of GAI seems like a wrong approach. Instead, have a Deep Learning system that's a full agent like. Other directions: from algorithmic information theory AIXI? From artificial life, artificial evolution. He thinks he has the correct answer!
+
+It's important to understand the whole stack. Implementing it yourself helps best to go forward. NOT work with tensorflow etc at the beginning. 
+
+* Week 2 
+
+** Error Analysis
+
+Manually examining the mistakes the algorithm is making can help. 
+
+Say you algorithm has 10% overall error. Should you go forth and try to improve it on dog pictures specifically?
+
+Error analysis:
+- Get ~100 mislabeled dev set examples.
+- Count how many are dogs.
+
+  If only 5%, then the ceiling is not very high. But if 50%, then you'd halve you error with a perfect classifier. This might be worth your time!
+
+Note the percentage of your data set of ideas for improvement you have, e.g. great cats, blurry images etc. Tend to go for larger chunks!
+
+** Cleaning up Incorrectly Labeled Examples
+
+*Mislabeled* examples: Your algorithm gives the wrong answer
+*Incorrectly labeled examples*: The data set has it wrong
+
+If the errors are reasonably random, it doesn't pay off to worry too much. DL is pretty robust towards those. They are less robust to systematic errors, though. For example, if white dogs tend to get classified as cats. Do something about it? Count up the percentage of incorrectly labeled examples in your mislabeled examples, then go ahead. 
+
+Look at:
+- Overall dev set error 10%
+- Errors due to incorrect labels 0.6 %
+- Errors due to other causes 9.4 %
+
+In this case, probably not the best use of your time. 
+
+Main purpose of the dev set: Choose between classifiers A and B.
+
+If you want to manually fix up examples, use the same process in dev and test set. Consider examples the algorithm got right, too. They might be for the wrong reason. But what to fix then? Don't get it. Observe that now train and dev/test set may now come from slightly different distribution. 
+
+Maybe it's not the most interesting thing to examine the examples, but this is something that Andrew still does himself - it can be a very good use of your time.
+
+** Build your First System Quickly, then Iterate.
+   
+Example: Speech recognition.
+- Noisy background
+- Accented speech
+- Far from microphone
+- Children's speech
+- Stuttering
+- ...
+
+How do you pick which to focus on? Difficult without thinking about the problem. So: Build quickly and iterate.
+
+- Set up dev/test set and metric
+- Build initial system quickly
+- Use bias/variance analysis & Error analysis to prioritize next steps.
+
+If there is a huge literature on exactly your project, then you might start with a more complicated architecture. But usually, Andrew has seen teams overthink their approach.
+
+** Training and Testing on Different Distributions
+
+Example: Cat App
+
+Data from webpages (200,000) vs Data from mobile app (10,000)
+
+Option 1: shuffle, then 205,000 train, 2,500 dev/test each. In this case, only few examples from mobile app in test/dev set. But you want to optimize for mobile app distribution. 
+Option 2: train has 205,000 from the web, then additional 5,000 from mobile app. Dev and test set are both mobile app only. Andrew recommends this! You are now aiming your target to where you want it to be. Will get you better performance in the long term.
+
+Example: Speech activated rear view mirror. 
+
+Training: Purchased data, Smart speaker control, voice keyboard, ...: 500,000 utterances
+
+Dev/test: Speech activated rearview mirror data, 20,000 utterances. 
+
+Maybe take half of the speech activated utterances from the rearview mirror into the training set.
+
+** Bias and Variance with Mismatched Data Distributions
+
+Analyzing bias and variance changes with mismatched distrubutions.
+
+Assume here that humans get 0% error. Let's say:
+
+Training error 1%, Dev error 10%. If not mismatched, clear variance problem! But not with mismatched. Instead, have a training-dev set: Same distribution as training set, but not used for training. Randomly shuffle training set, carve out training-dev set. 
+
+Training error 1%, Training-dev error 9%, Dev error 10%. Now you can see that there actually is a variance problem. The model isn't generalizing well. 
+
+Training error 1%, Training-dev error 1.5%, Dev error 10%. Data mismatch problem! The learning algorithm can't deal too well with the new distribution. 
+
+Training error 10%, ...: Avoidable bias problem. 
+
+Errors summarized:
+- Human level
+  - \uparrow \downarrow Avoidable Bias
+- Training
+  - \uparrow \downarrow Variance
+- Training-dev
+  - \uparrow \downarrow Data mismatch
+- Dev
+  - \uparrow \downarrow Degree of overfitting to the dev set (get more dev set data)
+- Test
+
+More general formulation. 
+
+|                                  | General Speech REcognition | Rearview mirror speech data |
+|----------------------------------+----------------------------+-----------------------------|
+| Human Level                      | Human level 4%             |                             |
+| Error on examples trained on     | Training error 7%          |                             |
+| Error on examples not trained on | Training-dev error 10%     | Dev/test error 6%           |
+
+How to address data mismatch? Spoiler: no great systematic ways available. But some tricks.
+
+** Addressing Data Mismatch
+   
+- Carry out manual error analysis. Understand difference between training and dev/test sets. Don't look at the test set! E.g. noisy data in dev set.
+- Make training data more similar, or collect more data similar to dev/test sets. E.g. simulate noisy in-car data with artificial data synthesis.
+  - If you only have little car noise, there is a chance that the model will overfit to the car noise. Careful with data synthesis! You might overfit to small subset of synthesized data. Artificial data synthesis DOES work, though! 
+
+** Transfer Learning
+
+Suppose you have a trained image recognizer (pre-training). You cut of the last layer and replace it with a new one. Now you train on your specific application, say radiology diagnoses (fine-tuning).
+
+Suppose you have a speech recognition system. You want a wake-word trigger word detection system (e.g. Hey Google). Delete the last layer again, and maybe even add more than one additional layers and train again.
+
+This makes a lot of sense if you have a lot of data for the transferred-from problem and little data for the transferred-to problem. 
+
+Transfer from A to B makes sense if
+- Task A and B have the same input x.
+- You have more data for task A than task B.
+- Low level features from A could be helpful for learning B.
+
+** Multi-Task Learning
+   
+Suppose simplified autonomous driving example. Must detect 
+- Pedestrians
+- Cars
+- Stop Signs
+- Traffic Lights
+- \dots
+
+$$y^{(i)} = \begin{bmatrix} 1 \\ 0 \\ 0 \\ 1 \end{bmatrix}: (4,1) $$
+$$Y: (4,m)$$
+
+New Loss:
+
+$$\mathcal{L}(\hat{y}^{(i)},y^{(i)}) = \sum_{j=1}^4 \mathcal{L} (\hat{y}^{(i)}_j,y^{(i)}_j)$$
+
+Now you have 4 classifiers, basically. The difference to softmax regression is that a single training example can have multiple labels (last layer activation don't have to add up to 1). 
+
+So, we are carrying out multi-task learning. You /could/ have trained four different networks. But if the tasks are similar, then this architecture might be beneficial.
+
+Sometimes labels are missing, then you just skip those summing up the loss function.
+
+Multi-task learning makes sense when
+- Training on a set of tasks that could benefit from sharing lower-level features
+- Usually: Amount of data for each task is rather similar.
+- You can train a big enough neural network to do well on all the tasks.
+
+In practive, multi-task learning is used much less often than transfer learning. The one example usually is computer vision and object detection.
+
+** End-to-End Deep Learning
+
+EtEDL repacles multiple computation steps with one deep neural network. 
+
+Example: Speech recognition. 
+
+audio \rightarrow_{MFCC} \rightarrow phonemes \rightarrow words \rightarrow transcript
+
+audio \rightarrow transcript
+
+For this to work, you need A LOT of data. For medium amounts of data, there are intermediate approaches. 
+
+Example: Face recognition.
+
+Best approach multistep. First detect a face in the image (1). Then zoom into that part of the image. Then that result if fed to an identifier neural network (2). (Basically, it is asked together with another image whether those two are the same person). Here, splitting up makes sense, since you have lots of data for sub process 1 and sub process 2, but not for the whole process.
+
+Example: Machine translation. Here, end-to-end works quite well, since you have a lot of examples for e.g. English to French translation.
+
+Example: Estimating child's age from X-ray of hand. Can make sense to divide up task into subtasks.
+
+** Whether to Use End-to-End Deep Learning
+
+Pros:
+- Lets the data speak. Phonemes are an invention of linguists! 
+- Less hand-design of components needed.
+
+Cons:
+- May need large amount of data
+- Excludes potentially useful hand-designed components
+
+Key question: do you have sufficient data?
+
+** Russ Salakhutdinov
+
+Russ was working on Restricted Boltzmann Machines as a PhD Student.

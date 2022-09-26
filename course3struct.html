@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-09-26 Mo 16:56 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes on Coursera, Deep Learning Specification, Structuring Machine Learning Projects, 2020</title>
+<meta name="author" content="By Me" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Notes on Coursera, Deep Learning Specification, Structuring Machine Learning Projects, 2020</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org3b80822">1. Week 1 Structuring Machine Learning Projects</a>
+<ul>
+<li><a href="#orgaf408a0">1.1. Orthogonalization</a></li>
+<li><a href="#org173b59b">1.2. Single Number Evaluation Metric</a></li>
+<li><a href="#org4eb45bc">1.3. Satisficing and Optimizing Metrics</a></li>
+<li><a href="#org43b0b86">1.4. Train/dev/test Distribution</a></li>
+<li><a href="#orgdee4952">1.5. Size of Dev and Test Set</a></li>
+<li><a href="#org44df860">1.6. When to Change dev/test sets and Metrics</a></li>
+<li><a href="#orgb06e847">1.7. Why Human-level Performance?</a></li>
+<li><a href="#orge5a4221">1.8. Avoidable Bias</a></li>
+<li><a href="#org32f9b28">1.9. Understanding Human-level Performance</a></li>
+<li><a href="#orgbe8ca72">1.10. Surpassing Human-level Performance</a></li>
+<li><a href="#org7a1929c">1.11. Improving Your Model Performance</a></li>
+<li><a href="#org5e0f50a">1.12. Andrej Karpathy</a></li>
+</ul>
+</li>
+<li><a href="#orgd93fbc8">2. Week 2</a>
+<ul>
+<li><a href="#orgadd8f22">2.1. Error Analysis</a></li>
+<li><a href="#orgcb25ff8">2.2. Cleaning up Incorrectly Labeled Examples</a></li>
+<li><a href="#org272d017">2.3. Build your First System Quickly, then Iterate.</a></li>
+<li><a href="#org341cbbc">2.4. Training and Testing on Different Distributions</a></li>
+<li><a href="#orgd1ead16">2.5. Bias and Variance with Mismatched Data Distributions</a></li>
+<li><a href="#orgebe372e">2.6. Addressing Data Mismatch</a></li>
+<li><a href="#org71ac56b">2.7. Transfer Learning</a></li>
+<li><a href="#orga19ceae">2.8. Multi-Task Learning</a></li>
+<li><a href="#orga8aa223">2.9. End-to-End Deep Learning</a></li>
+<li><a href="#org3e8cc76">2.10. Whether to Use End-to-End Deep Learning</a></li>
+<li><a href="#org5f1a937">2.11. Russ Salakhutdinov</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org3b80822" class="outline-2">
+<h2 id="org3b80822"><span class="section-number-2">1.</span> Week 1 Structuring Machine Learning Projects</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+How best to spend your time on a project? Don&rsquo;t go off into the wrong direction!
+</p>
+</div>
+
+<div id="outline-container-orgaf408a0" class="outline-3">
+<h3 id="orgaf408a0"><span class="section-number-3">1.1.</span> Orthogonalization</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+So much stuff to tune! Good engineers know what to tune. You want to tune only in one dimension for optimal control, e.g. only speed, angle of steering etc. for a car. 
+</p>
+
+<ul class="org-ul">
+<li>Fit training set well on cost function
+<ul class="org-ul">
+<li>Bigger network</li>
+<li>Adam</li>
+<li>&#x2026;</li>
+</ul></li>
+<li>Fit dev set well on cost function
+<ul class="org-ul">
+<li>Regularization</li>
+<li>Bigger training set</li>
+</ul></li>
+<li>Fit test set well on cost function
+<ul class="org-ul">
+<li>Bigger dev set</li>
+</ul></li>
+<li>Performs well in real world
+<ul class="org-ul">
+<li>Change dev set or cost function</li>
+</ul></li>
+</ul>
+
+<p>
+Andres does not use early stopping. It is not orthogonalized - it affects both training set and dev set performance. 
+</p>
+
+<p>
+How to diagnose what&rsquo;s the bottleneck to your system&rsquo;s performance?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org173b59b" class="outline-3">
+<h3 id="org173b59b"><span class="section-number-3">1.2.</span> Single Number Evaluation Metric</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+A single number quickly tells whether we improve trying new things. 
+</p>
+
+<p>
+Precision: TP/(FP+TP)
+Recall: TP/(FN+TP)
+</p>
+
+<p>
+If two classifiers don&rsquo;t agree on both metrics, what do? Maybe use F1 score: 2/(1/P + 1/R) (harmonic mean). This gives you a single number evaluation metric. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4eb45bc" class="outline-3">
+<h3 id="org4eb45bc"><span class="section-number-3">1.3.</span> Satisficing and Optimizing Metrics</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+If you have some metrics, it might be hard to press them into one single number. What helps is to have satisficing metrics, i.e. binary yes/no, only accept yes, and optimizing metrics, from which you pick the best one.
+</p>
+
+<p>
+Example: trigger words for voice activation, e.g. hey google. Maximize accuracy (optimizing), in case you have at most 1 false positive every 24 hours (satisficing)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org43b0b86" class="outline-3">
+<h3 id="org43b0b86"><span class="section-number-3">1.4.</span> Train/dev/test Distribution</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+dev set is sometimes also called cross validation set. 
+</p>
+
+<p>
+Suppose you have data from:
+</p>
+<ul class="org-ul">
+<li>US</li>
+<li>UK</li>
+<li>Europe</li>
+<li>South America</li>
+<li>India</li>
+<li>&#x2026;</li>
+</ul>
+
+<p>
+Have dev and test set from the same distribution! That is, do not divide by region. Instead, randomly shuffle data first and then divide.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdee4952" class="outline-3">
+<h3 id="orgdee4952"><span class="section-number-3">1.5.</span> Size of Dev and Test Set</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Old way: 70/30 Train/Test, 60/20/20 Train/Dev/Test
+</p>
+
+<p>
+T&rsquo;was pretty reasonable back in ye olden days with up to 10,000 training examples! But in the modern era, you have so much more training data. So you might 98/1/1 train/dev/test. 
+</p>
+
+<p>
+Set you test set big enough to give high confidence in the overall performance of your system. The dev set should not be your test set! 
+</p>
+
+<p>
+Train set: Learn parameters, dev set: Learn Hyperparameters, test set: Evaluate!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org44df860" class="outline-3">
+<h3 id="org44df860"><span class="section-number-3">1.6.</span> When to Change dev/test sets and Metrics</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Metric: Classification Error
+</p>
+
+<p>
+Algorithm A: 3% Error, but shows pornographic images!
+Algorithm B: 5% Error
+</p>
+
+<p>
+\[ E = \frac{1}{m_{dev}} \sum^{m_{dev}}_{i=1} \mathcal{I}\{y^{(i)}_{pred} \not= y^{(i)}\} \]
+</p>
+
+<p>
+doesn&rsquo;t cut it! Add weights \(w\):
+\[w = \begin{cases}1: & x^{(i)} \text{ is non-porn } \\ 10: & x^{(i)} \text{ if non-porn}\end{cases}\]
+And use instead:
+\[ E = \frac{1}{\sum_i w^{(i)}} \frac{1}{m_{dev}} \sum^{m_{dev}}_{i=1} w^{(i)} \mathcal{I}\{y^{(i)}_{pred} \not= y^{(i)}\} \]
+</p>
+
+<p>
+Two distinct steps:
+</p>
+<ol class="org-ol">
+<li>Define a metric to evaluate classifiers (Place target)</li>
+<li>How to do well on this metric (Aim and shoot at target)</li>
+</ol>
+
+<p>
+Two completely separate problems!
+</p>
+
+<p>
+Sometimes the real world application is nothing like your test/dev sets (e.g. user provided images) 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb06e847" class="outline-3">
+<h3 id="orgb06e847"><span class="section-number-3">1.7.</span> Why Human-level Performance?</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+In some areas, machines can compete with humans. Accuracy can surpass human level performance and asymptotically increase towards Bayes optimal error. Often, progress is quite fast until it hits human level performance. After that, progress slows down significantly. 
+</p>
+
+<p>
+So long as ML is worse than humans, you can:
+</p>
+<ul class="org-ul">
+<li>Get labeled data from humans</li>
+<li>Gain insight from manual error analysis: why did a person get this right?</li>
+<li>better analysis of bias/variance</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orge5a4221" class="outline-3">
+<h3 id="orge5a4221"><span class="section-number-3">1.8.</span> Avoidable Bias</h3>
+<div class="outline-text-3" id="text-1-8">
+<p>
+Human level performance as a proxy Bayes optimal.
+</p>
+
+<p>
+Large training error (compared to human error): Focus on reducing bias.  
+Low training error (compared to human error), but larger dev error: Focus on reducing variance.
+</p>
+
+<p>
+<b>Avoidable Bias</b>: Difference between Bayes error and Training error. 
+</p>
+
+<p>
+<b>Variance</b>: Difference between Training error and dev error.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org32f9b28" class="outline-3">
+<h3 id="org32f9b28"><span class="section-number-3">1.9.</span> Understanding Human-level Performance</h3>
+<div class="outline-text-3" id="text-1-9">
+<p>
+Human-level error is sometimes used as a proxy for Bayes error.
+Example: Medical image
+</p>
+<ol class="org-ol">
+<li>Typical human 3%</li>
+<li>Typical doctor 1%</li>
+<li>Experienced doctor .7%</li>
+<li>Team of experienced doctors .5%</li>
+</ol>
+
+<p>
+What is &ldquo;human-level&rdquo; error? Bayes &le; .5%. But so long as you surpass a typical doctor, you might get away with equating human-level to the doctor&rsquo;s performance. 
+</p>
+
+<p>
+Example. Say Training Error 5%, Dev error 6%. Human error 1/.7/.5%. Avoidable bias 4-4.5%, variance 1%. Focus on reducing bias.
+</p>
+
+<p>
+But if the training error is 1%, dev error is 5%, then the variance is 4%, so focus on the variance.
+</p>
+
+<p>
+If the training error is .5%, and the dev error .8%, then it really matters what you declare as human-level performance. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbe8ca72" class="outline-3">
+<h3 id="orgbe8ca72"><span class="section-number-3">1.10.</span> Surpassing Human-level Performance</h3>
+<div class="outline-text-3" id="text-1-10">
+<p>
+Some problem areas are better for ML:
+</p>
+
+<ul class="org-ul">
+<li>Online advertising</li>
+<li>Product Recommendations (REALLY?)</li>
+<li>Logistics</li>
+<li>Loan approvals</li>
+</ul>
+
+<p>
+These usually have lots of data, aren&rsquo;t natural perception, and enjoy structured data. 
+</p>
+
+<p>
+Some
+</p>
+<ul class="org-ul">
+<li>Speech recognition</li>
+<li>Image recognition</li>
+<li>Medical recognition</li>
+</ul>
+<p>
+tasks perform above human-level performance. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7a1929c" class="outline-3">
+<h3 id="org7a1929c"><span class="section-number-3">1.11.</span> Improving Your Model Performance</h3>
+<div class="outline-text-3" id="text-1-11">
+<p>
+The two fundamental assumptions of supervised learning:
+</p>
+<ol class="org-ol">
+<li>You can fit the training set pretty well. &rarr; Avoidable bias
+<ul class="org-ul">
+<li>Train bigger model,</li>
+<li>Train longer</li>
+<li>better optimization algorithms like momentum, RMSProp, Adam,</li>
+<li>NN architecture/hyperparameters search (RNN, CNN).</li>
+</ul></li>
+<li>The training set performance generalized well to dev/test set. &rarr; Variance.
+<ul class="org-ul">
+<li>More data,</li>
+<li>regularization, l<sub>2</sub>, dropout etc</li>
+<li>NN architecture search</li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org5e0f50a" class="outline-3">
+<h3 id="org5e0f50a"><span class="section-number-3">1.12.</span> Andrej Karpathy</h3>
+<div class="outline-text-3" id="text-1-12">
+<p>
+Unsupervised Learning hasn&rsquo;t delivered yet, compared to supervised learning. A lot of people are still deep believers, though! Long term future of AI? Field will split into two trajectories. First will applying stuff better and better. Second will be more Generalized AI. The divide&amp;conquer approach of GAI seems like a wrong approach. Instead, have a Deep Learning system that&rsquo;s a full agent like. Other directions: from algorithmic information theory AIXI? From artificial life, artificial evolution. He thinks he has the correct answer!
+</p>
+
+<p>
+It&rsquo;s important to understand the whole stack. Implementing it yourself helps best to go forward. NOT work with tensorflow etc at the beginning. 
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd93fbc8" class="outline-2">
+<h2 id="orgd93fbc8"><span class="section-number-2">2.</span> Week 2</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgadd8f22" class="outline-3">
+<h3 id="orgadd8f22"><span class="section-number-3">2.1.</span> Error Analysis</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Manually examining the mistakes the algorithm is making can help. 
+</p>
+
+<p>
+Say you algorithm has 10% overall error. Should you go forth and try to improve it on dog pictures specifically?
+</p>
+
+<p>
+Error analysis:
+</p>
+<ul class="org-ul">
+<li>Get ~100 mislabeled dev set examples.</li>
+<li><p>
+Count how many are dogs.
+</p>
+
+<p>
+If only 5%, then the ceiling is not very high. But if 50%, then you&rsquo;d halve you error with a perfect classifier. This might be worth your time!
+</p></li>
+</ul>
+
+<p>
+Note the percentage of your data set of ideas for improvement you have, e.g. great cats, blurry images etc. Tend to go for larger chunks!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcb25ff8" class="outline-3">
+<h3 id="orgcb25ff8"><span class="section-number-3">2.2.</span> Cleaning up Incorrectly Labeled Examples</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+<b>Mislabeled</b> examples: Your algorithm gives the wrong answer
+<b>Incorrectly labeled examples</b>: The data set has it wrong
+</p>
+
+<p>
+If the errors are reasonably random, it doesn&rsquo;t pay off to worry too much. DL is pretty robust towards those. They are less robust to systematic errors, though. For example, if white dogs tend to get classified as cats. Do something about it? Count up the percentage of incorrectly labeled examples in your mislabeled examples, then go ahead. 
+</p>
+
+<p>
+Look at:
+</p>
+<ul class="org-ul">
+<li>Overall dev set error 10%</li>
+<li>Errors due to incorrect labels 0.6 %</li>
+<li>Errors due to other causes 9.4 %</li>
+</ul>
+
+<p>
+In this case, probably not the best use of your time. 
+</p>
+
+<p>
+Main purpose of the dev set: Choose between classifiers A and B.
+</p>
+
+<p>
+If you want to manually fix up examples, use the same process in dev and test set. Consider examples the algorithm got right, too. They might be for the wrong reason. But what to fix then? Don&rsquo;t get it. Observe that now train and dev/test set may now come from slightly different distribution. 
+</p>
+
+<p>
+Maybe it&rsquo;s not the most interesting thing to examine the examples, but this is something that Andrew still does himself - it can be a very good use of your time.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org272d017" class="outline-3">
+<h3 id="org272d017"><span class="section-number-3">2.3.</span> Build your First System Quickly, then Iterate.</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Example: Speech recognition.
+</p>
+<ul class="org-ul">
+<li>Noisy background</li>
+<li>Accented speech</li>
+<li>Far from microphone</li>
+<li>Children&rsquo;s speech</li>
+<li>Stuttering</li>
+<li>&#x2026;</li>
+</ul>
+
+<p>
+How do you pick which to focus on? Difficult without thinking about the problem. So: Build quickly and iterate.
+</p>
+
+<ul class="org-ul">
+<li>Set up dev/test set and metric</li>
+<li>Build initial system quickly</li>
+<li>Use bias/variance analysis &amp; Error analysis to prioritize next steps.</li>
+</ul>
+
+<p>
+If there is a huge literature on exactly your project, then you might start with a more complicated architecture. But usually, Andrew has seen teams overthink their approach.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org341cbbc" class="outline-3">
+<h3 id="org341cbbc"><span class="section-number-3">2.4.</span> Training and Testing on Different Distributions</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Example: Cat App
+</p>
+
+<p>
+Data from webpages (200,000) vs Data from mobile app (10,000)
+</p>
+
+<p>
+Option 1: shuffle, then 205,000 train, 2,500 dev/test each. In this case, only few examples from mobile app in test/dev set. But you want to optimize for mobile app distribution. 
+Option 2: train has 205,000 from the web, then additional 5,000 from mobile app. Dev and test set are both mobile app only. Andrew recommends this! You are now aiming your target to where you want it to be. Will get you better performance in the long term.
+</p>
+
+<p>
+Example: Speech activated rear view mirror. 
+</p>
+
+<p>
+Training: Purchased data, Smart speaker control, voice keyboard, &#x2026;: 500,000 utterances
+</p>
+
+<p>
+Dev/test: Speech activated rearview mirror data, 20,000 utterances. 
+</p>
+
+<p>
+Maybe take half of the speech activated utterances from the rearview mirror into the training set.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd1ead16" class="outline-3">
+<h3 id="orgd1ead16"><span class="section-number-3">2.5.</span> Bias and Variance with Mismatched Data Distributions</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Analyzing bias and variance changes with mismatched distrubutions.
+</p>
+
+<p>
+Assume here that humans get 0% error. Let&rsquo;s say:
+</p>
+
+<p>
+Training error 1%, Dev error 10%. If not mismatched, clear variance problem! But not with mismatched. Instead, have a training-dev set: Same distribution as training set, but not used for training. Randomly shuffle training set, carve out training-dev set. 
+</p>
+
+<p>
+Training error 1%, Training-dev error 9%, Dev error 10%. Now you can see that there actually is a variance problem. The model isn&rsquo;t generalizing well. 
+</p>
+
+<p>
+Training error 1%, Training-dev error 1.5%, Dev error 10%. Data mismatch problem! The learning algorithm can&rsquo;t deal too well with the new distribution. 
+</p>
+
+<p>
+Training error 10%, &#x2026;: Avoidable bias problem. 
+</p>
+
+<p>
+Errors summarized:
+</p>
+<ul class="org-ul">
+<li>Human level
+<ul class="org-ul">
+<li>&uarr; &darr; Avoidable Bias</li>
+</ul></li>
+<li>Training
+<ul class="org-ul">
+<li>&uarr; &darr; Variance</li>
+</ul></li>
+<li>Training-dev
+<ul class="org-ul">
+<li>&uarr; &darr; Data mismatch</li>
+</ul></li>
+<li>Dev
+<ul class="org-ul">
+<li>&uarr; &darr; Degree of overfitting to the dev set (get more dev set data)</li>
+</ul></li>
+<li>Test</li>
+</ul>
+
+<p>
+More general formulation. 
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">General Speech REcognition</th>
+<th scope="col" class="org-left">Rearview mirror speech data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Human Level</td>
+<td class="org-left">Human level 4%</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Error on examples trained on</td>
+<td class="org-left">Training error 7%</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Error on examples not trained on</td>
+<td class="org-left">Training-dev error 10%</td>
+<td class="org-left">Dev/test error 6%</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+How to address data mismatch? Spoiler: no great systematic ways available. But some tricks.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgebe372e" class="outline-3">
+<h3 id="orgebe372e"><span class="section-number-3">2.6.</span> Addressing Data Mismatch</h3>
+<div class="outline-text-3" id="text-2-6">
+<ul class="org-ul">
+<li>Carry out manual error analysis. Understand difference between training and dev/test sets. Don&rsquo;t look at the test set! E.g. noisy data in dev set.</li>
+<li>Make training data more similar, or collect more data similar to dev/test sets. E.g. simulate noisy in-car data with artificial data synthesis.
+<ul class="org-ul">
+<li>If you only have little car noise, there is a chance that the model will overfit to the car noise. Careful with data synthesis! You might overfit to small subset of synthesized data. Artificial data synthesis DOES work, though!</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org71ac56b" class="outline-3">
+<h3 id="org71ac56b"><span class="section-number-3">2.7.</span> Transfer Learning</h3>
+<div class="outline-text-3" id="text-2-7">
+<p>
+Suppose you have a trained image recognizer (pre-training). You cut of the last layer and replace it with a new one. Now you train on your specific application, say radiology diagnoses (fine-tuning).
+</p>
+
+<p>
+Suppose you have a speech recognition system. You want a wake-word trigger word detection system (e.g. Hey Google). Delete the last layer again, and maybe even add more than one additional layers and train again.
+</p>
+
+<p>
+This makes a lot of sense if you have a lot of data for the transferred-from problem and little data for the transferred-to problem. 
+</p>
+
+<p>
+Transfer from A to B makes sense if
+</p>
+<ul class="org-ul">
+<li>Task A and B have the same input x.</li>
+<li>You have more data for task A than task B.</li>
+<li>Low level features from A could be helpful for learning B.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga19ceae" class="outline-3">
+<h3 id="orga19ceae"><span class="section-number-3">2.8.</span> Multi-Task Learning</h3>
+<div class="outline-text-3" id="text-2-8">
+<p>
+Suppose simplified autonomous driving example. Must detect 
+</p>
+<ul class="org-ul">
+<li>Pedestrians</li>
+<li>Cars</li>
+<li>Stop Signs</li>
+<li>Traffic Lights</li>
+<li>&hellip;</li>
+</ul>
+
+<p>
+\[y^{(i)} = \begin{bmatrix} 1 \\ 0 \\ 0 \\ 1 \end{bmatrix}: (4,1) \]
+\[Y: (4,m)\]
+</p>
+
+<p>
+New Loss:
+</p>
+
+<p>
+\[\mathcal{L}(\hat{y}^{(i)},y^{(i)}) = \sum_{j=1}^4 \mathcal{L} (\hat{y}^{(i)}_j,y^{(i)}_j)\]
+</p>
+
+<p>
+Now you have 4 classifiers, basically. The difference to softmax regression is that a single training example can have multiple labels (last layer activation don&rsquo;t have to add up to 1). 
+</p>
+
+<p>
+So, we are carrying out multi-task learning. You <i>could</i> have trained four different networks. But if the tasks are similar, then this architecture might be beneficial.
+</p>
+
+<p>
+Sometimes labels are missing, then you just skip those summing up the loss function.
+</p>
+
+<p>
+Multi-task learning makes sense when
+</p>
+<ul class="org-ul">
+<li>Training on a set of tasks that could benefit from sharing lower-level features</li>
+<li>Usually: Amount of data for each task is rather similar.</li>
+<li>You can train a big enough neural network to do well on all the tasks.</li>
+</ul>
+
+<p>
+In practive, multi-task learning is used much less often than transfer learning. The one example usually is computer vision and object detection.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga8aa223" class="outline-3">
+<h3 id="orga8aa223"><span class="section-number-3">2.9.</span> End-to-End Deep Learning</h3>
+<div class="outline-text-3" id="text-2-9">
+<p>
+EtEDL repacles multiple computation steps with one deep neural network. 
+</p>
+
+<p>
+Example: Speech recognition. 
+</p>
+
+<p>
+audio &rarr;<sub>MFCC</sub> &rarr; phonemes &rarr; words &rarr; transcript
+</p>
+
+<p>
+audio &rarr; transcript
+</p>
+
+<p>
+For this to work, you need A LOT of data. For medium amounts of data, there are intermediate approaches. 
+</p>
+
+<p>
+Example: Face recognition.
+</p>
+
+<p>
+Best approach multistep. First detect a face in the image (1). Then zoom into that part of the image. Then that result if fed to an identifier neural network (2). (Basically, it is asked together with another image whether those two are the same person). Here, splitting up makes sense, since you have lots of data for sub process 1 and sub process 2, but not for the whole process.
+</p>
+
+<p>
+Example: Machine translation. Here, end-to-end works quite well, since you have a lot of examples for e.g. English to French translation.
+</p>
+
+<p>
+Example: Estimating child&rsquo;s age from X-ray of hand. Can make sense to divide up task into subtasks.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3e8cc76" class="outline-3">
+<h3 id="org3e8cc76"><span class="section-number-3">2.10.</span> Whether to Use End-to-End Deep Learning</h3>
+<div class="outline-text-3" id="text-2-10">
+<p>
+Pros:
+</p>
+<ul class="org-ul">
+<li>Lets the data speak. Phonemes are an invention of linguists!</li>
+<li>Less hand-design of components needed.</li>
+</ul>
+
+<p>
+Cons:
+</p>
+<ul class="org-ul">
+<li>May need large amount of data</li>
+<li>Excludes potentially useful hand-designed components</li>
+</ul>
+
+<p>
+Key question: do you have sufficient data?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5f1a937" class="outline-3">
+<h3 id="org5f1a937"><span class="section-number-3">2.11.</span> Russ Salakhutdinov</h3>
+<div class="outline-text-3" id="text-2-11">
+<p>
+Russ was working on Restricted Boltzmann Machines as a PhD Student.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: By Me</p>
+<p class="date">Created: 2022-09-26 Mo 16:56</p>
+</div>
+</body>
+</html>

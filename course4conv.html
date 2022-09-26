@@ -1,0 +1,1300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-09-26 Mo 16:58 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes on Coursera, Deep Learning Specification, Convolutional Neural Networks</title>
+<meta name="author" content="By Me" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Notes on Coursera, Deep Learning Specification, Convolutional Neural Networks</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org474ad3a">1. Week 1: Foundations of Convolutional Neural Networks</a>
+<ul>
+<li><a href="#orga9c6e8d">1.1. Computer Vision</a></li>
+<li><a href="#orge0075d2">1.2. Edge Detection Example</a></li>
+<li><a href="#orge8f7e35">1.3. More Edge Detection</a></li>
+<li><a href="#org4c13984">1.4. Padding</a>
+<ul>
+<li><a href="#org8368ce1">1.4.1. Valid and Same convolutions</a></li>
+</ul>
+</li>
+<li><a href="#org85ade9c">1.5. Strided Convolution</a></li>
+<li><a href="#org6305672">1.6. Convolutions over Volume</a></li>
+<li><a href="#org75363d9">1.7. One Layer of a Conv Net</a>
+<ul>
+<li><a href="#orgeca57fc">1.7.1. Summary of Notation</a></li>
+</ul>
+</li>
+<li><a href="#org28960a0">1.8. Simple Convolutional Network Examples</a></li>
+<li><a href="#orgcdbd80b">1.9. Pooling Layers</a></li>
+<li><a href="#org02b7f1a">1.10. CNN Example.</a></li>
+<li><a href="#orgfea7542">1.11. WHY Convolutions?</a></li>
+</ul>
+</li>
+<li><a href="#org5e9cb4f">2. Week 2: Case Studies</a>
+<ul>
+<li><a href="#org9e7b9f0">2.1. Classic Networks</a>
+<ul>
+<li><a href="#org3debd5b">2.1.1. LeNet 5</a></li>
+<li><a href="#org488d040">2.1.2. AlexNet</a></li>
+<li><a href="#org89294cd">2.1.3. VGG-16</a></li>
+</ul>
+</li>
+<li><a href="#orga7796d8">2.2. ResNets</a>
+<ul>
+<li><a href="#org5c2865e">2.2.1. Residual blocks</a></li>
+</ul>
+</li>
+<li><a href="#org3f9857b">2.3. Why ResNets Work</a></li>
+<li><a href="#orga4a82f7">2.4. Networks in Networks and 1x1 Convolutions</a></li>
+<li><a href="#orgd811b5f">2.5. Inception Networks.</a></li>
+<li><a href="#org18774bb">2.6. Open Source</a></li>
+<li><a href="#org29d54b3">2.7. Transfer Learning</a></li>
+<li><a href="#orgdb71550">2.8. Data Augmentation</a></li>
+<li><a href="#org1a89f38">2.9. State of Computer Vision</a></li>
+</ul>
+</li>
+<li><a href="#orge95db0c">3. Week 3: Object Detection</a>
+<ul>
+<li><a href="#org4a8a40b">3.1. Object Localization</a></li>
+<li><a href="#org8f3dcdb">3.2. Landmark Detection</a></li>
+<li><a href="#org2eeadb5">3.3. Object Detection</a></li>
+<li><a href="#org988ad70">3.4. Convolutional Implementation of sliding windows</a></li>
+<li><a href="#orgaa7e38e">3.5. Output more accurate bounding boxes</a></li>
+<li><a href="#orgf33521d">3.6. Intersection over union</a></li>
+<li><a href="#org1feed53">3.7. Non-max suppression example</a></li>
+<li><a href="#org5a696e6">3.8. Anchor Boxes</a></li>
+<li><a href="#org2c60e31">3.9. YOLO Algorithm</a></li>
+<li><a href="#org6b900f2">3.10. Region proposals</a></li>
+<li><a href="#org135b6e3">3.11. From the Jupyter Notebook</a></li>
+</ul>
+</li>
+<li><a href="#org1da42c6">4. Week 4: Special applications: Face recognition &amp; Neural style Transfer</a>
+<ul>
+<li><a href="#org176788c">4.1. Face Recognition</a></li>
+<li><a href="#org996748d">4.2. One-shot learning</a></li>
+<li><a href="#org7afcf9d">4.3. Siamese Network</a></li>
+<li><a href="#org32042fb">4.4. Triplet Loss</a></li>
+<li><a href="#org03b6e14">4.5. Face Verification and Binary Classification problem</a></li>
+<li><a href="#org497954f">4.6. Neural Style Transfer</a></li>
+<li><a href="#orga55ae27">4.7. What are deep Convnets really learning?</a></li>
+<li><a href="#orgc93400f">4.8. Cost function</a></li>
+<li><a href="#org46e4068">4.9. Content Cost function</a></li>
+<li><a href="#org0f76de8">4.10. Style Cost function</a></li>
+<li><a href="#orgde9bf53">4.11. 1D and 3D generalization of conv nets</a></li>
+<li><a href="#orge4229d5">4.12. Notes from the Jupyter Notebook?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org474ad3a" class="outline-2">
+<h2 id="org474ad3a"><span class="section-number-2">1.</span> Week 1: Foundations of Convolutional Neural Networks</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-orga9c6e8d" class="outline-3">
+<h3 id="orga9c6e8d"><span class="section-number-3">1.1.</span> Computer Vision</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Deep Learning and computer vision: a match made in heaven!
+</p>
+
+<p>
+Tasks:
+</p>
+<ul class="org-ul">
+<li>Image Classification</li>
+<li>Object Detection</li>
+<li>Neural style transfer</li>
+</ul>
+
+<p>
+Problem: a metric fuckton of parameters even for moderate size images!
+</p>
+
+<p>
+Convolution operation is the fundamental building block of conv nets.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge0075d2" class="outline-3">
+<h3 id="orge0075d2"><span class="section-number-3">1.2.</span> Edge Detection Example</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Vertical edges vs. horizontal edges.
+</p>
+
+<p>
+This 3x3 filter (kernel, matrix) can detect vertical edges for example:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">-1</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">-1</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">-1</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+<i>Convolute</i> it with your image to apply the filter: element-wise product and addition gives the respective value for the result. Then move filter by a fixed amount and apply again.
+</p>
+
+<p>
+E.g., A 6x6 matrix convolved (write &rsquo;*&rsquo;) with a 3x3 filter, step size 1 to produce a 4x4 matrix.
+</p>
+
+<p>
+Convolve in keras: <code>Conv2D</code>
+</p>
+
+<p>
+Example:
+</p>
+
+<p>
+\[
+\begin{pmatrix}
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 
+\end{pmatrix}\star\begin{pmatrix}
+1 & 0 & -1 \\
+1 & 0 & -1 \\
+1 & 0 & -1 
+\end{pmatrix}=\begin{matrix}
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+\end{matrix}
+\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge8f7e35" class="outline-3">
+<h3 id="orge8f7e35"><span class="section-number-3">1.3.</span> More Edge Detection</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+This detection works similarly with light-to-dark, dark-to-light. Horizontal edges work similarly, too. Just the same for more complicated edges. But do you need a manually created filter for every type of edge? There are many types of filters.
+</p>
+
+<p>
+No, the filters can be <i>learned</i>. How? The numbers in the filter are treated as parameters to be learned by backprop! This makes the detection very robust, apparently (there are a few reasoning steps missing here). Much more on the learning later.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4c13984" class="outline-3">
+<h3 id="org4c13984"><span class="section-number-3">1.4.</span> Padding</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+n x n image convolved with fxf filter gives an n-f+1 x n-f+1 result.
+2 downsides:
+</p>
+<ul class="org-ul">
+<li>Maybe you don&rsquo;t want to image to shrink!</li>
+<li>Pixels on the corners are used less often.</li>
+</ul>
+
+<p>
+Solution: add some padding. E.g. 6x6 * 3x3 = 4x4, with 1 padding all around the result is 6x6 again. Padding should be f-1/2 to retain image size.
+</p>
+
+<p>
+Padding value, by convention, is always 0!
+</p>
+</div>
+
+<div id="outline-container-org8368ce1" class="outline-4">
+<h4 id="org8368ce1"><span class="section-number-4">1.4.1.</span> Valid and Same convolutions</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<p>
+Valid: p = 0, No padding 
+Same: p = f-1/2
+</p>
+
+<p>
+f is usually odd, so the padding can be symmetric, also the filter has a central pixel.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org85ade9c" class="outline-3">
+<h3 id="org85ade9c"><span class="section-number-3">1.5.</span> Strided Convolution</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+stride = 2 means that after each filter application, take 2 steps instead of one. This leads to a smaller result matrix.
+</p>
+
+<p>
+nxn * fxf, padding p stride s leads to \(\frac{n + 2p - f}{s} + 1\) x \(\frac{n + 2p - f}{s} + 1\), if not an integer, floor (i.e round down by convention, the filter must lie completely in the image).
+</p>
+
+<p>
+Technical note on math textbooks: Often, the filter is first flipped horizontally and vertically. Then the convolution operator is associative. We don&rsquo;t need it though. the convolution shown here might be called cross-correlation in a text book.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6305672" class="outline-3">
+<h3 id="org6305672"><span class="section-number-3">1.6.</span> Convolutions over Volume</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+What to do for RGB images (with three color channels?) So you have a 6x6x3 image. You convolve it with a 3x3x3 filter. 
+</p>
+
+<p>
+height x width x #channels. Number of channels in image must match number of channels in the filter.
+</p>
+
+<p>
+6x6x3 * 3x3x3 = 4x4 (without padding).
+</p>
+
+<p>
+All three channels are convolved together into one result cell.
+</p>
+
+<p>
+What if you want to use multiple filter at the same time? Stack the results!
+</p>
+
+<p>
+n&times; n &times; n<sub>c</sub> * f &times; f &times; n<sub>c</sub> &rarr; n-f+1 &times; n-f+1 times \(n_c^\prime\)
+</p>
+
+<p>
+where n<sub>c</sub> is the number of channels per filter, and \(n_c^\prime\) here is the number of filters
+</p>
+
+<p>
+number of channels is commonly also called <i>depth</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org75363d9" class="outline-3">
+<h3 id="org75363d9"><span class="section-number-3">1.7.</span> One Layer of a Conv Net</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+\[ z^{[1]} = W^{[1]}a^{[0]} + b^{[1]} \]
+\[ a^{[1]} = g(z^{[1]} \]
+</p>
+
+<p>
+If you have 10 filters that are 3&times; 3&times; 3 in one layer, how many parameters does that layer have?
+</p>
+
+<p>
+One filter has 27 params + bias, 10 filters have 280 parameters. Nice: No matter the size of the image, the # of parameters stays constant &rarr; less prone to overfitting! it&rsquo;s-a nice-a!
+</p>
+</div>
+
+<div id="outline-container-orgeca57fc" class="outline-4">
+<h4 id="orgeca57fc"><span class="section-number-4">1.7.1.</span> Summary of Notation</h4>
+<div class="outline-text-4" id="text-1-7-1">
+<p>
+if layer \(l\) is a convolution layer:
+</p>
+<ul class="org-ul">
+<li>\(f^{[l]}\) filter size</li>
+<li>\(p^{[l]}\) padding</li>
+<li>s<sup>[l]</sup> stride</li>
+<li>input: n<sub>H</sub><sup>[l-1]</sup> &times; n<sub>W</sub><sup>[l-1]</sup> &times; n<sub>c</sub><sup>[l-1]</sup></li>
+<li>output: n<sub>H</sub><sup>[l]</sup> &times; n<sub>W</sub><sup>[l]</sup> &times; n<sub>c</sub><sup>[l]</sup></li>
+<li>\(n_H^{[l]} = \text{floor}( \frac{n_H^{[l-1]} - 2p^{[l]} - f^{[l]}}{s^{[l]}} + 1)\)</li>
+<li>\(n_W^{[l]} = \text{floor}( \frac{n_W^{[l-1]} - 2p^{[l]} - f^{[l]}}{s^{[l]}} + 1)\)</li>
+<li>Each filter is \(f^{[l]} \times f^{[l]} \times n_c^{[l-1]}\)</li>
+<li>activations: \(a^{[l]} \rightarrow n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}\), \(A^{[l]} \rightarrow m \times n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}\).</li>
+<li>Weights: \(f^{[l]} \times f^{[l]} \times n_c^{[l-1]} \times n_c^{[l]}\), where \(n_c^{[l]}\) is the number of filters in layer \(l\).</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org28960a0" class="outline-3">
+<h3 id="org28960a0"><span class="section-number-3">1.8.</span> Simple Convolutional Network Examples</h3>
+<div class="outline-text-3" id="text-1-8">
+<p>
+Example conv net
+</p>
+
+<p>
+\(n_H^{[0]} = n_W^{[0]} = 39, n_c^{[0]} = 3\).
+</p>
+
+<p>
+\(39\times3 9\times 3 \rightarrow_{(f^{[1]} = 3, s^{[1]} = 1, p^{[1]} = 0, \text{ 10 filters} )} 37\times 37\times 10\) 
+</p>
+
+<p>
+\(n_H^{[1]} = n_W^{[1]} = 37, n_c^{[1]} = 10\).
+</p>
+
+<p>
+\(37\times 37\times 10 \rightarrow_{(f^{[2]} = 5, s^{[2]} = 2, p^{[2]} = 0, \text{ 20 filters})} 17\times 17\times 20\)   
+</p>
+
+<p>
+\(n_H^{[2]} = n_W^{[2]} = 17, n_c^{[2]} = 20\).
+</p>
+
+<p>
+\(17\times 17\times 20 \rightarrow_{(f^{[2]} = 5, s^{[2]} = 2, p^{[2]} = 0, \text{ 40 filters})} 7\times 7\times 40\)   
+</p>
+
+<p>
+\(n_H^{[3]} = n_W^{[3]} = 7, n_c^{[3]} = 40\).
+</p>
+
+<p>
+\(7 \times 7 \times 40 \rightarrow_{\text{fully connected}} 1 \times 1960 \rightarrow \text{softmax}\)
+</p>
+
+<p>
+Typically, you start with larger images and go down in size, but the number of channels increases.
+</p>
+
+<p>
+Types of layers:
+</p>
+<ul class="org-ul">
+<li>conv</li>
+<li>pool</li>
+<li>fully connected</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgcdbd80b" class="outline-3">
+<h3 id="orgcdbd80b"><span class="section-number-3">1.9.</span> Pooling Layers</h3>
+<div class="outline-text-3" id="text-1-9">
+<p>
+Output of a filter is just the max value of it&rsquo;s region. You still have \(f\) as the filter size and \(s\) as the stride.  
+</p>
+
+<p>
+Intuitively, max pooling selects the feature detected by that region, which is more likely to have a high value (?). Experimentally it works well, that&rsquo;s probably the real reason.
+</p>
+
+<p>
+For the result it still holds that:
+</p>
+
+<p>
+\(n \times n \times n_c \rightarrow floor(\frac{n +2p - f}{s} + 1) \times floor(\frac{n +2p - f}{s} + 1) \times n_c\). Simple! 
+</p>
+
+<p>
+Also, we have average pooling, where you take the average instead of max pooling. This is sometimes used to collapse the representation deep in the network.
+</p>
+
+<p>
+Common choices for pooling: \(f = 2, s = 2\) or \(f=3,s=2\), usually no padding.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org02b7f1a" class="outline-3">
+<h3 id="org02b7f1a"><span class="section-number-3">1.10.</span> CNN Example.</h3>
+<div class="outline-text-3" id="text-1-10">
+<p>
+Similar to LeNet-5. There is disagreement about what is called a layer. Because the pooling layer doesn&rsquo;t have parameters (only hyperparameters) it is usually not counted as a layer. So a conv and a pool layer are grouped into one layer.
+</p>
+
+<p>
+\(n_H^{[0]} = n_W^{[0]} = 32, n_c^{[0]} = 3\).
+</p>
+
+<p>
+\(32\times 32\times 3 \rightarrow_{(\text{conv_1}, f = 5, s = 1, \text{ 6 filters} )} 28\times 28\times 6\) 
+</p>
+
+<p>
+\(\rightarrow_{(\text{pool_1}, f = 2, s=2)} 14 \times 14 \times 6\)
+</p>
+
+<p>
+\(\rightarrow_{(\text{conv_2}, f = 5, s = 1, \text{ 16 filters} )} 10\times 10\times 16\) 
+</p>
+
+<p>
+\(\rightarrow_{(\text{pool_2}, f = 2, s=2)} 5 \times 5 \times 16\)
+</p>
+
+<p>
+\(\rightarrow_{(\text{fc_3})} 120\times 1\)
+</p>
+
+<p>
+\(\rightarrow_{(\text{fc_4})} 84\times 1\)
+</p>
+
+<p>
+\(\rightarrow_{(\text{softmax_5})} 10\times 1\)
+</p>
+
+<p>
+Usually \(n_H, n_W\) decrease, \(n_c\) increases. Alternating conv/pool layers pretty common.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfea7542" class="outline-3">
+<h3 id="orgfea7542"><span class="section-number-3">1.11.</span> WHY Convolutions?</h3>
+<div class="outline-text-3" id="text-1-11">
+<p>
+Why are they so useful, these convolutions?
+</p>
+
+<p>
+Two main advantages: 
+</p>
+<ul class="org-ul">
+<li>parameter sharing</li>
+<li>sparsity of connection</li>
+</ul>
+
+<p>
+For small images already the parameters size is RIDICOLOUSly huge! Conv nets have smaller numbers, they <i>share</i> parameters. The reasoning is something along the line that visual patterns which can be recognized will be repeated throughout the image, so a feature detector (i.e. filter) will be successfully reused.
+</p>
+
+<p>
+In addition, each cell of an output depends only on few cells of the input, making the connections sparse.
+</p>
+
+<p>
+This makes the parameter number much smaller, so less prone to overfitting. Implements translational invariance, meaning robustness in the face of moving around image parts.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5e9cb4f" class="outline-2">
+<h2 id="org5e9cb4f"><span class="section-number-2">2.</span> Week 2: Case Studies</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+We&rsquo;re looking at some classic, pretty effective networks. Also let&rsquo;s look at ResNet with 152 layers. Many ideas cross-fertilize and might be interesting for other areas than computer vision. Hehe. he said fertilize. 
+</p>
+</div>
+
+<div id="outline-container-org9e7b9f0" class="outline-3">
+<h3 id="org9e7b9f0"><span class="section-number-3">2.1.</span> Classic Networks</h3>
+<div class="outline-text-3" id="text-2-1">
+</div>
+<div id="outline-container-org3debd5b" class="outline-4">
+<h4 id="org3debd5b"><span class="section-number-4">2.1.1.</span> LeNet 5</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Recognize handwritten digits. Quite similar to last week&rsquo;s example.  About 60k examples.
+</p>
+
+<p>
+Conv &rarr; avg pool &rarr; conv &rarr; avg pool &rarr; fc sigmoid  rightarrow fc sigmoid &rarr; \hat{y} 
+</p>
+
+<p>
+People didn&rsquo;t really use padding, so the size shrinks every layer. Also, they still used average pooling. Also, sigmoid and tanh were much more common than ReLU. There are some complexity details used for speeding up computation which wouldn&rsquo;t be relevant today.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org488d040" class="outline-4">
+<h4 id="org488d040"><span class="section-number-4">2.1.2.</span> AlexNet</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+Conv &rarr; max pool &rarr; conv &rarr; max pool &rarr; conv &rarr; conv &rarr; conv &rarr; max pool &rarr; fc &rarr; &rarr; fc &rarr; fc &rarr; softmax 
+</p>
+
+<p>
+About 60M parameters, using ReLU. Uses a complicated way to use two GPUs. This paper had a huge impact of the usage of deep learning in Computer vision. Worth to read the paper! Convinced many Computer Vision researchers to take a better look at Deep Learning. 2012
+</p>
+</div>
+</div>
+
+<div id="outline-container-org89294cd" class="outline-4">
+<h4 id="org89294cd"><span class="section-number-4">2.1.3.</span> VGG-16</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+conv 2x &rarr; pool &rarr; conv 2x &rarr; pool &rarr; conv 3x &rarr; pool &rarr; conv3x &rarr; pool &rarr; conv 3x &rarr; pool &rarr; fc &rarr; fc &rarr; softmax 
+</p>
+
+<p>
+138M parameters. 
+</p>
+
+<p>
+The pattern, again: height, width go down as you go deeper. The number of channels increases, though. &rsquo;Very deep&rsquo; network.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga7796d8" class="outline-3">
+<h3 id="orga7796d8"><span class="section-number-3">2.2.</span> ResNets</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Vanishing, exploding gradient kind of problems appear for convnets, too, mostly in very deep networks, of course.
+</p>
+</div>
+
+<div id="outline-container-org5c2865e" class="outline-4">
+<h4 id="org5c2865e"><span class="section-number-4">2.2.1.</span> Residual blocks</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Generally, networks work like:
+</p>
+
+<p>
+\[a^{[l]} \rightarrow linear \rightarrow ReLU \rightarrow a^{[l+1]} \rightarrow \dots\] 
+</p>
+
+<p>
+In resnets, you add the output of a previous layer to the input to the activation function of a layer some steps down the line. For example: 
+</p>
+
+<p>
+\[a^{[l+2]} = g(z^{[l+2]} + a^{[l]})\]
+</p>
+
+<p>
+Layer \(l\) and \(l+1\) are then called a residual block. Sometimes called &rsquo;skip connection&rsquo;.
+</p>
+
+<p>
+Residual blocks allow you to train much deeper networks. It helps with the training error. 
+</p>
+
+<p>
+In practice, often the training error goes back up after decreasing when adding more layers. ResNets help keep the training error going down.
+</p>
+
+<p>
+Why does it do so? We&rsquo;ll see an intuition now.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3f9857b" class="outline-3">
+<h3 id="org3f9857b"><span class="section-number-3">2.3.</span> Why ResNets Work</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Let&rsquo;s look at an example. We have a Big &rsquo;plain&rsquo; NN with ReLU and look at actiations  of layer \(a^{[l]}\). In a second identical network, we add a ResBlock to \(a^{[l]}\), s.t. \(a^{[l+2]} = g(z^{[l+2]} + a^{[l]})\). If the weights \(W^{[l+2]}\) and \(b^{[l+2]}\) are zero, then the ResBlock gives the identity function (for ReLUs). So the identity function is <b>very easy to learn</b> for a ResBlock. In standard nets, these are difficult to learn. So in many cases, the layers make your result worse, not better. ResBlocks at least don&rsquo;t hurt your performance, but may improve it! 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga4a82f7" class="outline-3">
+<h3 id="orga4a82f7"><span class="section-number-3">2.4.</span> Networks in Networks and 1x1 Convolutions</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+A 1x1 conv gives a single real number for each &rsquo;depth slice&rsquo;. It is basically having a fully connected layer (network) applying to each of the pixels. 
+</p>
+
+<p>
+Example:
+</p>
+
+<p>
+28x28x192 &rarr; 28x28x32 with 32 filters of 1x1x192 size.
+</p>
+
+<p>
+Verry useful to build an INCEPTION NETWORK!!
+</p>
+
+<p>
+Also a way to shrink the number of channels to save on computation. Also adds non-linearity.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd811b5f" class="outline-3">
+<h3 id="orgd811b5f"><span class="section-number-3">2.5.</span> Inception Networks.</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Instead of choosing pooling, conv with particular filter size, 1x1, do them all in one, concatenating the results.
+</p>
+
+<p>
+Also, implement a bottleneck layer to improve computational cost for large convolution layers.
+</p>
+
+<p>
+The Inception network is just a bunch of inception layers. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org18774bb" class="outline-3">
+<h3 id="org18774bb"><span class="section-number-3">2.6.</span> Open Source</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+Often open source implementations are available if you want to replicate a paper&rsquo;s applications. Search for &rsquo;type of network + github&rsquo;. 
+</p>
+
+<p>
+Workflow: Pick architecture that you like, look for open source implementation and go from there. Another advantage: Often pre-trained networks are available.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org29d54b3" class="outline-3">
+<h3 id="org29d54b3"><span class="section-number-3">2.7.</span> Transfer Learning</h3>
+<div class="outline-text-3" id="text-2-7">
+<p>
+Use hyperparameters from others! Yay.
+</p>
+
+<p>
+Reuse trained network and change the last layer to learn about your dataset. &rsquo;Freeze&rsquo; all reused layers during training.
+</p>
+
+<p>
+If you have a larger training set, freeze fewer layers maybe? Use last few layers as initial configuration or start with fresh new layers. 
+</p>
+
+<p>
+If you have a lot of data, you may use the whole thing as initialization and retrain the whole net.
+</p>
+
+<p>
+For lots of computer vision applications, transfer learning is something you should almost always do, except if you have loads of data and computational resources (unlikely).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdb71550" class="outline-3">
+<h3 id="orgdb71550"><span class="section-number-3">2.8.</span> Data Augmentation</h3>
+<div class="outline-text-3" id="text-2-8">
+<p>
+More Data! with augmentation. 
+</p>
+
+<ul class="org-ul">
+<li>Mirroring</li>
+<li>random cropping</li>
+<li>color shifting: Add distortions to RGB channels, e.g. +20,-20,+20, draw from distribution. This simulates different lighting conditions. Additionally, use PCA color augmentation (google it).</li>
+</ul>
+
+<p>
+How to implement during training? Fix one or multiple CPU thread to distort images from disk, per mini<sub>batch</sub> training. Can run in parallel to training.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1a89f38" class="outline-3">
+<h3 id="org1a89f38"><span class="section-number-3">2.9.</span> State of Computer Vision</h3>
+<div class="outline-text-3" id="text-2-9">
+<p>
+What&rsquo;s special about computer vision? 
+Object Detection &rarr; Image recognition &rarr; speech recognition 
+little data &rarr; lots&rsquo;o&rsquo;data
+more hand-engineering (&rsquo;hacks&rsquo;) &rarr; less hand-engineering (simpler algorithms)
+</p>
+
+<p>
+Often, we don&rsquo;t have as much data as we need. Transfer learning helps a lot with little data. 
+</p>
+
+<p>
+Doing well on benchmarks is different from production/reality, but may help to find efficient algorithms. These help with benchmarking:
+</p>
+<ul class="org-ul">
+<li>Ensembling: average outputs of multiple networks</li>
+<li>Multicrop at test time: run classifier on multiple versions of test image and average results</li>
+</ul>
+
+<p>
+Use open source projects! Implementations! Use pretrained models!
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge95db0c" class="outline-2">
+<h2 id="orge95db0c"><span class="section-number-2">3.</span> Week 3: Object Detection</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org4a8a40b" class="outline-3">
+<h3 id="org4a8a40b"><span class="section-number-3">3.1.</span> Object Localization</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Object localization vs. object detection.
+</p>
+
+<p>
+Image classification: Standard classifier (1 object)
+Classification wit localization: Additionally, locate the object within a bounding box. (1 object)
+Detection: Possibly multiple objects of different categories.
+</p>
+
+<p>
+Example. Classifier with categories via softmax
+</p>
+<ul class="org-ul">
+<li>pedestrian</li>
+<li>car</li>
+<li>motorcycle</li>
+<li>background (i.e. none of the above)</li>
+</ul>
+
+<p>
+Localization: Additionally outputs for bounding box of localized object. Determine bounding box via \(b_x, b_y, b_h, b_w\).
+</p>
+
+<p>
+y consists of:
+</p>
+<ul class="org-ul">
+<li>\(p_c\) probability of is there an object?</li>
+<li>\(b_x, b_y, b_h, b_w\) bounding box</li>
+<li>\(c_1, c_2, c_3\) category probabilities.</li>
+</ul>
+
+<p>
+Training data if there is no object is a don&rsquo;t care &rsquo;?&rsquo;-filled data point. This matters for the definition of the loss function.
+</p>
+
+<p>
+If \(y_1 = 1\) then \(\mathcal{L}(\hat{y}, y) = (\hat{y_1} - y_1)^2 + (\hat{y_2} - y_2)^2 + \dots + (\hat{y_8} - y_8)^2\),
+</p>
+
+<p>
+If \(y_1 = 0\) then \(\mathcal{L}(\hat{y}, y) = (\hat{y_1} - y_1)^2\).
+</p>
+
+<p>
+In practice, log likelihood loss is also fine. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8f3dcdb" class="outline-3">
+<h3 id="org8f3dcdb"><span class="section-number-3">3.2.</span> Landmark Detection</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Just output x,y coordinates. For example, important feature points of a face, like bounds of faces. Use 64 or more coordinates? No problem! Just need applicable training data. Also helpful for pose detection.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2eeadb5" class="outline-3">
+<h3 id="org2eeadb5"><span class="section-number-3">3.3.</span> Object Detection</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Sliding windows detection algorithm. Example: Cars. Training set with closely cropped car/non-car images. Train a network on this data. Then, take a <i>sliding window</i> over your image and feed each windows slice into your conv net to check for cars. Once over is helpful, but now you repeat with a slightly larger region, and repeat again. Problem: costly computation. Before deep learning, this was kind of feasible. What&rsquo;s the solution? Convolutional implementation!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org988ad70" class="outline-3">
+<h3 id="org988ad70"><span class="section-number-3">3.4.</span> Convolutional Implementation of sliding windows</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Turn a fully connected layer into a convolutional layer. Take a \(5\times 5\times 16\) layer and apply 400 filters of size \(5\times 5\) to simulate an fc layer.
+</p>
+
+<p>
+Using fc layers like this, you can implement sliding windows via convolution. Take the same configuration for your conv net and run it on a larger image. The result is an &rsquo;image&rsquo; that contains the results of the classification of the sliding window. You can control the parameters like stride of the sliding window through the size of an intermediate max pool layer. How exactly does it work? Needs more general explanation. It&rsquo;s hilariously poor in the video.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaa7e38e" class="outline-3">
+<h3 id="orgaa7e38e"><span class="section-number-3">3.5.</span> Output more accurate bounding boxes</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+YOLO algorithm (You only look once) for the problem of bounding boxes not matching up with the objects in the picture. 
+</p>
+
+<p>
+Very similar to object localization algorithm, but with an output for \(19\times19\) grid cells, with 8 output values each (in this example). This is a convolutions implementation, and runs quite fast!
+</p>
+
+<p>
+\[ \hat{y} = \begin{pmatrix}c \\ b_x \\ b_y \\ b_h \\ b_w \\ c_p \\ c_m \\ c_c \end{pmatrix} \]
+</p>
+
+<p>
+Where \(0 \leq b_x, b_y, b_h, b_w \leq 1\).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf33521d" class="outline-3">
+<h3 id="orgf33521d"><span class="section-number-3">3.6.</span> Intersection over union</h3>
+<div class="outline-text-3" id="text-3-6">
+<p>
+Let&rsquo;s add to the yolo algorithm with IoU. Evaluate the cell you look at and the bounding box. Divide: size of intersection by size of union of cell and bounding box if one is found. Estimate the correctness of your prediction.
+</p>
+
+<p>
+I swear if the next algorithm name is also a pun I&rsquo;m gonna lose it.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1feed53" class="outline-3">
+<h3 id="org1feed53"><span class="section-number-3">3.7.</span> Non-max suppression example</h3>
+<div class="outline-text-3" id="text-3-7">
+<p>
+If you have multiple detects, you take the ones with high IoU (i.e. overlap) with the highest \(p_c\) and remove them. So you &rsquo;suppress&rsquo; the &rsquo;non-max&rsquo; bounding boxes. 
+</p>
+
+<p>
+Example. 19&times;19 grid cells. 
+</p>
+<ul class="org-ul">
+<li>Discard all boxes with $p<sub>c</sub> &le; threshold.</li>
+<li>While there are remaining boxes:
+<ul class="org-ul">
+<li>Pick the box with the largest \(p_c\), output as prediction.</li>
+<li>discard any remaining box with IoU &ge; threshold with the largest \(p_c\) box.</li>
+</ul></li>
+</ul>
+
+<p>
+Actually useful description of the algorithm pulled from quora:
+</p>
+
+<p>
+Input: A list of Proposal boxes B, corresponding confidence scores S and overlap threshold N.
+</p>
+
+<p>
+Output: A list of filtered proposals D.
+</p>
+
+<p>
+Algorithm:
+</p>
+
+<p>
+Select the proposal with highest confidence score, remove it from B and add it to the final proposal list D. (Initially D is empty).
+Now compare this proposal with all the proposals — calculate the IOU (Intersection over Union) of this proposal with every other proposal. If the IOU is greater than the threshold N, remove that proposal from B.
+Again take the proposal with the highest confidence from the remaining proposals in B and remove it from B and add it to D.
+Once again calculate the IOU of this proposal with all the proposals in B and eliminate the boxes which have high IOU than threshold.
+This process is repeated until there are no more proposals left in B.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5a696e6" class="outline-3">
+<h3 id="org5a696e6"><span class="section-number-3">3.8.</span> Anchor Boxes</h3>
+<div class="outline-text-3" id="text-3-8">
+<p>
+Overlapping boxes can be a problem (e.g. person in front of car). Anchor boxes help by providing additional discriminatory capacity: Each object in an image is assigned to the grid cell with the midpoint and an anchor box for the grid cell with the highest IoU between grid cell and anchor box. The output then also has to include the anchor boxes, i.e. doubles in size for two anchor boxes (weird). This helps with two objects in the same grid cell with different anchor boxes (which are just bounding boxes).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2c60e31" class="outline-3">
+<h3 id="org2c60e31"><span class="section-number-3">3.9.</span> YOLO Algorithm</h3>
+<div class="outline-text-3" id="text-3-9">
+<p>
+Training. Suppose \(3\times3\times\2\times8\), where we have \(3\times3\) grid cells and 2 anchor boxes and 8 output values, which are 5 + number of classes. 
+</p>
+
+<p>
+Run non-max suppression for each prediction class individually. 
+</p>
+
+<p>
+The YOLO algorithm is really good I swear!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6b900f2" class="outline-3">
+<h3 id="org6b900f2"><span class="section-number-3">3.10.</span> Region proposals</h3>
+<div class="outline-text-3" id="text-3-10">
+<p>
+R-CNN (regions with CNNs) picks regions for which is make sense to run the conv net classifier on. Segmentation algorithm first to guess what could be an object. then run the classifier over the suggestions. ca 2000. Initially quite slow. Augment with a convolutional implementation. Then also use a convolutional network to propose the regions. (How? see paper.) Still quite a bit slower than YOLO tho.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org135b6e3" class="outline-3">
+<h3 id="org135b6e3"><span class="section-number-3">3.11.</span> From the Jupyter Notebook</h3>
+<div class="outline-text-3" id="text-3-11">
+<p>
+&ldquo;You Only Look Once&rdquo; (YOLO) is a popular algorithm because it achieves high accuracy while also being able to run in real-time. This algorithm &ldquo;only looks once&rdquo; at the image in the sense that it requires only one forward propagation pass through the network to make predictions. After non-max suppression, it then outputs recognized objects together with the bounding boxes.
+</p>
+
+<p>
+What you should remember:
+</p>
+
+<p>
+YOLO is a state-of-the-art object detection model that is fast and accurate
+It runs an input image through a CNN which outputs a 19x19x5x85 dimensional volume.
+The encoding can be seen as a grid where each of the 19x19 cells contains information about 5 boxes.
+You filter through all the boxes using non-max suppression. Specifically:
+    Score thresholding on the probability of detecting a class to keep only accurate (high probability) boxes
+    Intersection over Union (IoU) thresholding to eliminate overlapping boxes
+Because training a YOLO model from randomly initialized weights is non-trivial and requires a large dataset as well as lot of computation, we used previously trained model parameters in this exercise. If you wish, you can also try fine-tuning the YOLO model with your own dataset, though this would be a fairly non-trivial exercise.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1da42c6" class="outline-2">
+<h2 id="org1da42c6"><span class="section-number-2">4.</span> Week 4: Special applications: Face recognition &amp; Neural style Transfer</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org176788c" class="outline-3">
+<h3 id="org176788c"><span class="section-number-3">4.1.</span> Face Recognition</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Face verification vs. face recognition
+</p>
+
+<p>
+Verification
+</p>
+<ul class="org-ul">
+<li>Input image, name/ID</li>
+<li>Output whether match</li>
+</ul>
+
+<p>
+Recognition
+</p>
+<ul class="org-ul">
+<li>database of \(k\) persons</li>
+<li>output ID if input image if any of K persons.</li>
+</ul>
+
+<p>
+Recognition problem much harder, since the error multiplies for each check compared to recognition systems.
+</p>
+
+<p>
+Focus first on verification systems.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org996748d" class="outline-3">
+<h3 id="org996748d"><span class="section-number-3">4.2.</span> One-shot learning</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+This is a challenge: recognize a person with just one image (if only one picture). Not enough training data! 
+</p>
+
+<p>
+Instead, learn a similarity function \(d(img_1, img_2)\), with d the degree of difference between images. Then threshold.
+</p>
+
+<p>
+Also better for new members of the team. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7afcf9d" class="outline-3">
+<h3 id="org7afcf9d"><span class="section-number-3">4.3.</span> Siamese Network</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Fix some layer deep into the network which is the encoding of the input, say a 128 fc layer. Do the same with a second image. Calculate \(d(x^{(1)},x^{(2)}) = || f(x^{(1)}, f(x^({2)} ||^2)\)
+</p>
+
+<p>
+Learn parameters so that: 
+</p>
+<ul class="org-ul">
+<li>If the same person, distance small.</li>
+<li>If a different person, distance large.</li>
+</ul>
+
+<p>
+How to define the objective function here?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org32042fb" class="outline-3">
+<h3 id="org32042fb"><span class="section-number-3">4.4.</span> Triplet Loss</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+Data triplet: One anchor image A, a positive image P and a negative image N. 
+</p>
+
+<p>
+Want: \(d(A,P) \leq d(A,N)\)
+</p>
+
+<p>
+\[d(A,P) - d(A,N) + \alpha \leq 0\]
+</p>
+
+<p>
+\[\mathcal{L}(A,P,N) = max(||f(A)-f(P)||^2 - ||f(A)-f(N)||^2 + \alpha, 0)\]
+</p>
+
+<p>
+The cost is then the simple sum over all triplets. So the training set needs to be in triplet form. You need multiple pictures of the same person for this to work.
+</p>
+
+<p>
+Choose triplets: 
+</p>
+<ul class="org-ul">
+<li>randomly problematic, since then it&rsquo;s easily satisfied. Choose hard problems.</li>
+<li>Choose such that \(d(A,N) ~ d(A,P)\).</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org03b6e14" class="outline-3">
+<h3 id="org03b6e14"><span class="section-number-3">4.5.</span> Face Verification and Binary Classification problem</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+Also possible to learn the similarity function with a last layer that consists of only one unit with a sigmoid function over the difference of the two encodings, i.e.
+</p>
+
+<p>
+\[ \hat{y} = \sigma(\sum w_k |f(x^{(i)}_k - f(x^{(j)})_k| + b) \]
+</p>
+
+<p>
+for example. \(\Chi^2\) -similarity might work, too.
+</p>
+
+<p>
+this system might work very well, too. Your training set consists in pairs of images with labels whether they&rsquo;re the same person or not.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org497954f" class="outline-3">
+<h3 id="org497954f"><span class="section-number-3">4.6.</span> Neural Style Transfer</h3>
+<div class="outline-text-3" id="text-4-6">
+<p>
+Take some content (C) and recreate it (G) in the <i>style</i> of another (S). E.g. Stanford in the style of Van Gogh.
+</p>
+
+<p>
+For this, get some better intuition into what these layers in a conv net are really computing.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga55ae27" class="outline-3">
+<h3 id="orga55ae27"><span class="section-number-3">4.7.</span> What are deep Convnets really learning?</h3>
+<div class="outline-text-3" id="text-4-7">
+<p>
+Suppose Alexnet like conv net. 
+</p>
+<ul class="org-ul">
+<li>Pick a unit in layer 1. Find the nine image patches or images in the training set that maximize the unit&rsquo;s activation. Repeat for other units. Also, repeat for deeper layers, too. typically, deeper units are activated by a larger portion of the image. Deeper layers tend to get activated by larger patterns, while earlier layer have simple shapes as activation (e.g. edges etc). Deeper layers then get activated by types of object.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgc93400f" class="outline-3">
+<h3 id="orgc93400f"><span class="section-number-3">4.8.</span> Cost function</h3>
+<div class="outline-text-3" id="text-4-8">
+<p>
+\[J(G) = \alpha J_{content}(C,G) + \beta J_{style}(S,G)\]
+</p>
+
+<p>
+How to generate the new image? 
+</p>
+<ol class="org-ol">
+<li>Initialize G randomly</li>
+<li>Use gradient descent to minimize J(G)
+\[G:=G- \frac{\alpha}{2G} J(G)\]</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org46e4068" class="outline-3">
+<h3 id="org46e4068"><span class="section-number-3">4.9.</span> Content Cost function</h3>
+<div class="outline-text-3" id="text-4-9">
+<ul class="org-ul">
+<li>Say you use hidden layer \(l\) to compute cost, where \(l\) is neither too shallow nor too deep. If too shallow, then too pixel perfect. If too high, too conceptual. Needs to look similar!</li>
+<li>Use pre-trained ConvNet (E.g. VGG network)</li>
+<li>Let \(a^{[l](C)}\) be the activation of layer \(l\) of C, G analogously.</li>
+<li>if both activations are similar, both images have similar content.</li>
+</ul>
+<p>
+\[J_{content}(C,G) = || a^{[l](C)} - a^{[l](G)} ||^2\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0f76de8" class="outline-3">
+<h3 id="org0f76de8"><span class="section-number-3">4.10.</span> Style Cost function</h3>
+<div class="outline-text-3" id="text-4-10">
+<p>
+What does Style of image mean? Take some layer \(l\) as definitive of the style. Define style as correlation between activations across channels. 
+</p>
+
+<p>
+Define style matrix. 
+</p>
+
+<p>
+Let \(a^{[l]}_{i,j,k}\) be the activation at \(i,j,k\).
+</p>
+
+<p>
+\(G^{[l]}\) is an \(n^{[l]}_C \times n_C^{[l]}\) matrix which measures the correlation between the channels of layer \(l\).
+</p>
+
+<p>
+The additional superscript \((S)\) and \((G)\) refer to the style and generated image, respectively.
+</p>
+
+<p>
+\[G^{[l](G)}_{kk'} = \sum^{n_H}_{i=1}\sum_{j=1}^{n_W} a^{[l](G)}_{i,j,k} a^{[l](G)}_{i,j,k'}\]
+</p>
+
+<p>
+In linear algebra, these style matrices are called &rsquo;gram matrix&rsquo;.
+</p>
+
+<p>
+\[J^{[l]}_{style}(S,G) = \frac{1}{(2n^{[l]}_H n^{[l]}_W n^{[l]}_C)^2} \sum_k \sum_{k'} (G^{[l](S)}_{kk'} - G^{[l](G)}_{kk'})^2\]
+</p>
+
+<p>
+Better results with multiple layers!
+</p>
+
+<p>
+\[J_{style}(S,G) = \sum_l \lambda^{[l]} J_{style}^{[l]} (S,G)\]
+</p>
+
+<p>
+where lambda is a hyper parameter. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgde9bf53" class="outline-3">
+<h3 id="orgde9bf53"><span class="section-number-3">4.11.</span> 1D and 3D generalization of conv nets</h3>
+<div class="outline-text-3" id="text-4-11">
+<p>
+1D: ekg heartbeat. Say 14 &times; 1 * 5 &times; 1 &rarr; 10 &times; 16 (if you have 16 filters). 
+</p>
+
+<p>
+But usually, for 1-d data you&rsquo;d usually use recurrent neural nets.
+</p>
+
+<p>
+The case for 3D is completely straightforward. Useful for CAT scans, or movie data, etc p.p. 
+</p>
+
+<p>
+Guess what! This generalizes arbitrarily. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge4229d5" class="outline-3">
+<h3 id="orge4229d5"><span class="section-number-3">4.12.</span> Notes from the Jupyter Notebook?</h3>
+<div class="outline-text-3" id="text-4-12">
+<p>
+How is it achieved that the gradient descent is performed on the image and not on the model&rsquo;s parameters? Even after completing the assignment, it hasn&rsquo;t become clear :(
+</p>
+
+<p>
+G(gram)i,jG(gram)i,j: correlation
+</p>
+
+<p>
+The result is a matrix of dimension (nC,nC)(nC,nC) where nCnC is the number of filters (channels). The value G(gram)i,jG(gram)i,j measures how similar the activations of filter ii are to the activations of filter jj.
+G(gram),i,iG(gram),i,i: prevalence of patterns or textures
+</p>
+
+<p>
+The diagonal elements G(gram)iiG(gram)ii measure how &ldquo;active&rdquo; a filter ii is.
+For example, suppose filter ii is detecting vertical textures in the image. Then G(gram)iiG(gram)ii measures how common vertical textures are in the image as a whole.
+If G(gram)iiG(gram)ii is large, this means that the image has a lot of vertical texture.
+</p>
+
+<p>
+By capturing the prevalence of different types of features (G(gram)iiG(gram)ii), as well as how much different features occur together (G(gram)ijG(gram)ij), the Style matrix GgramGgram measures the style of an image. 
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: By Me</p>
+<p class="date">Created: 2022-09-26 Mo 16:58</p>
+</div>
+</body>
+</html>

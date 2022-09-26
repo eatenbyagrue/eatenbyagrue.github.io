@@ -1,0 +1,577 @@
+#+TITLE: Notes on Coursera, Deep Learning Specification, Convolutional Neural Networks, 2020
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+* Week 1: Foundations of Convolutional Neural Networks
+
+** Computer Vision
+
+Deep Learning and computer vision: a match made in heaven!
+
+Tasks:
+- Image Classification
+- Object Detection
+- Neural style transfer
+
+Problem: a metric fuckton of parameters even for moderate size images!
+
+Convolution operation is the fundamental building block of conv nets.
+
+** Edge Detection Example
+
+Vertical edges vs. horizontal edges.
+
+This 3x3 filter (kernel, matrix) can detect vertical edges for example:
+
+| 1 | 0 | -1 |
+| 1 | 0 | -1 |
+| 1 | 0 | -1 |
+
+/Convolute/ it with your image to apply the filter: element-wise product and addition gives the respective value for the result. Then move filter by a fixed amount and apply again.
+
+E.g., A 6x6 matrix convolved (write '*') with a 3x3 filter, step size 1 to produce a 4x4 matrix.
+
+Convolve in keras: ~Conv2D~
+
+Example:
+
+$$
+\begin{pmatrix}
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 \\
+10 & 10 & 10 & 0 & 0 & 0 
+\end{pmatrix}\star\begin{pmatrix}
+1 & 0 & -1 \\
+1 & 0 & -1 \\
+1 & 0 & -1 
+\end{pmatrix}=\begin{matrix}
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+0 & 30 & 30 & 0 \\ 
+\end{matrix}
+$$
+
+** More Edge Detection
+
+ This detection works similarly with light-to-dark, dark-to-light. Horizontal edges work similarly, too. Just the same for more complicated edges. But do you need a manually created filter for every type of edge? There are many types of filters.
+
+ No, the filters can be /learned/. How? The numbers in the filter are treated as parameters to be learned by backprop! This makes the detection very robust, apparently (there are a few reasoning steps missing here). Much more on the learning later.
+
+** Padding
+
+  n x n image convolved with fxf filter gives an n-f+1 x n-f+1 result.
+  2 downsides:
+  - Maybe you don't want to image to shrink!
+  - Pixels on the corners are used less often.
+
+  Solution: add some padding. E.g. 6x6 * 3x3 = 4x4, with 1 padding all around the result is 6x6 again. Padding should be f-1/2 to retain image size.
+
+Padding value, by convention, is always 0!
+
+*** Valid and Same convolutions
+
+  Valid: p = 0, No padding 
+  Same: p = f-1/2
+
+  f is usually odd, so the padding can be symmetric, also the filter has a central pixel.
+
+** Strided Convolution
+
+stride = 2 means that after each filter application, take 2 steps instead of one. This leads to a smaller result matrix.
+
+nxn * fxf, padding p stride s leads to $\frac{n + 2p - f}{s} + 1$ x $\frac{n + 2p - f}{s} + 1$, if not an integer, floor (i.e round down by convention, the filter must lie completely in the image).
+
+Technical note on math textbooks: Often, the filter is first flipped horizontally and vertically. Then the convolution operator is associative. We don't need it though. the convolution shown here might be called cross-correlation in a text book.
+
+** Convolutions over Volume
+
+What to do for RGB images (with three color channels?) So you have a 6x6x3 image. You convolve it with a 3x3x3 filter. 
+
+height x width x #channels. Number of channels in image must match number of channels in the filter.
+
+6x6x3 * 3x3x3 = 4x4 (without padding).
+
+All three channels are convolved together into one result cell.
+
+What if you want to use multiple filter at the same time? Stack the results!
+
+n\times n \times n_c * f \times f \times n_c \rightarrow n-f+1 \times n-f+1 times $n_c^\prime$
+
+where n_c is the number of channels per filter, and $n_c^\prime$ here is the number of filters
+
+number of channels is commonly also called /depth/.
+
+** One Layer of a Conv Net
+
+$$ z^{[1]} = W^{[1]}a^{[0]} + b^{[1]} $$
+$$ a^{[1]} = g(z^{[1]} $$
+
+If you have 10 filters that are 3\times 3\times 3 in one layer, how many parameters does that layer have?
+
+One filter has 27 params + bias, 10 filters have 280 parameters. Nice: No matter the size of the image, the # of parameters stays constant \rightarrow less prone to overfitting! it's-a nice-a!
+
+*** Summary of Notation
+if layer $l$ is a convolution layer:
+- $f^{[l]}$ filter size
+- $p^{[l]}$ padding
+- s^{[l]} stride
+- input: n_H^{[l-1]} \times n_W^{[l-1]} \times n_c^{[l-1]}
+- output: n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}
+- $n_H^{[l]} = \text{floor}( \frac{n_H^{[l-1]} - 2p^{[l]} - f^{[l]}}{s^{[l]}} + 1)$
+- $n_W^{[l]} = \text{floor}( \frac{n_W^{[l-1]} - 2p^{[l]} - f^{[l]}}{s^{[l]}} + 1)$
+- Each filter is $f^{[l]} \times f^{[l]} \times n_c^{[l-1]}$
+- activations: $a^{[l]} \rightarrow n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}$, $A^{[l]} \rightarrow m \times n_H^{[l]} \times n_W^{[l]} \times n_c^{[l]}$.
+- Weights: $f^{[l]} \times f^{[l]} \times n_c^{[l-1]} \times n_c^{[l]}$, where $n_c^{[l]}$ is the number of filters in layer $l$.
+
+** Simple Convolutional Network Examples
+
+Example conv net
+
+$n_H^{[0]} = n_W^{[0]} = 39, n_c^{[0]} = 3$.
+
+$39\times3 9\times 3 \rightarrow_{(f^{[1]} = 3, s^{[1]} = 1, p^{[1]} = 0, \text{ 10 filters} )} 37\times 37\times 10$ 
+
+$n_H^{[1]} = n_W^{[1]} = 37, n_c^{[1]} = 10$.
+
+$37\times 37\times 10 \rightarrow_{(f^{[2]} = 5, s^{[2]} = 2, p^{[2]} = 0, \text{ 20 filters})} 17\times 17\times 20$   
+
+$n_H^{[2]} = n_W^{[2]} = 17, n_c^{[2]} = 20$.
+
+$17\times 17\times 20 \rightarrow_{(f^{[2]} = 5, s^{[2]} = 2, p^{[2]} = 0, \text{ 40 filters})} 7\times 7\times 40$   
+
+$n_H^{[3]} = n_W^{[3]} = 7, n_c^{[3]} = 40$.
+
+$7 \times 7 \times 40 \rightarrow_{\text{fully connected}} 1 \times 1960 \rightarrow \text{softmax}$
+
+Typically, you start with larger images and go down in size, but the number of channels increases.
+
+Types of layers:
+ - conv
+ - pool
+ - fully connected
+
+** Pooling Layers
+
+Output of a filter is just the max value of it's region. You still have $f$ as the filter size and $s$ as the stride.  
+
+Intuitively, max pooling selects the feature detected by that region, which is more likely to have a high value (?). Experimentally it works well, that's probably the real reason.
+
+For the result it still holds that:
+
+$n \times n \times n_c \rightarrow floor(\frac{n +2p - f}{s} + 1) \times floor(\frac{n +2p - f}{s} + 1) \times n_c$. Simple! 
+
+Also, we have average pooling, where you take the average instead of max pooling. This is sometimes used to collapse the representation deep in the network.
+
+Common choices for pooling: $f = 2, s = 2$ or $f=3,s=2$, usually no padding.
+
+** CNN Example.
+
+Similar to LeNet-5. There is disagreement about what is called a layer. Because the pooling layer doesn't have parameters (only hyperparameters) it is usually not counted as a layer. So a conv and a pool layer are grouped into one layer.
+
+$n_H^{[0]} = n_W^{[0]} = 32, n_c^{[0]} = 3$.
+
+$32\times 32\times 3 \rightarrow_{(\text{conv_1}, f = 5, s = 1, \text{ 6 filters} )} 28\times 28\times 6$ 
+
+$\rightarrow_{(\text{pool_1}, f = 2, s=2)} 14 \times 14 \times 6$
+
+$\rightarrow_{(\text{conv_2}, f = 5, s = 1, \text{ 16 filters} )} 10\times 10\times 16$ 
+
+$\rightarrow_{(\text{pool_2}, f = 2, s=2)} 5 \times 5 \times 16$
+
+$\rightarrow_{(\text{fc_3})} 120\times 1$
+
+$\rightarrow_{(\text{fc_4})} 84\times 1$
+
+$\rightarrow_{(\text{softmax_5})} 10\times 1$
+
+Usually $n_H, n_W$ decrease, $n_c$ increases. Alternating conv/pool layers pretty common.
+
+** WHY Convolutions?
+
+Why are they so useful, these convolutions?
+
+Two main advantages: 
+- parameter sharing
+- sparsity of connection
+
+For small images already the parameters size is RIDICOLOUSly huge! Conv nets have smaller numbers, they /share/ parameters. The reasoning is something along the line that visual patterns which can be recognized will be repeated throughout the image, so a feature detector (i.e. filter) will be successfully reused.
+
+In addition, each cell of an output depends only on few cells of the input, making the connections sparse.
+
+This makes the parameter number much smaller, so less prone to overfitting. Implements translational invariance, meaning robustness in the face of moving around image parts.
+
+* Week 2: Case Studies
+
+We're looking at some classic, pretty effective networks. Also let's look at ResNet with 152 layers. Many ideas cross-fertilize and might be interesting for other areas than computer vision. Hehe. he said fertilize. 
+
+** Classic Networks
+
+*** LeNet 5 
+
+Recognize handwritten digits. Quite similar to last week's example.  About 60k examples.
+
+Conv \rightarrow avg pool \rightarrow conv \rightarrow avg pool \rightarrow fc sigmoid  rightarrow fc sigmoid \rightarrow \hat{y} 
+
+People didn't really use padding, so the size shrinks every layer. Also, they still used average pooling. Also, sigmoid and tanh were much more common than ReLU. There are some complexity details used for speeding up computation which wouldn't be relevant today.
+
+*** AlexNet 
+
+Conv \rightarrow max pool \rightarrow conv \rightarrow max pool \rightarrow conv \rightarrow conv \rightarrow conv \rightarrow max pool \rightarrow fc \rightarrow \rightarrow fc \rightarrow fc \rightarrow softmax 
+
+About 60M parameters, using ReLU. Uses a complicated way to use two GPUs. This paper had a huge impact of the usage of deep learning in Computer vision. Worth to read the paper! Convinced many Computer Vision researchers to take a better look at Deep Learning. 2012
+
+*** VGG-16
+
+conv 2x \rightarrow pool \rightarrow conv 2x \rightarrow pool \rightarrow conv 3x \rightarrow pool \rightarrow conv3x \rightarrow pool \rightarrow conv 3x \rightarrow pool \rightarrow fc \rightarrow fc \rightarrow softmax 
+
+138M parameters. 
+
+The pattern, again: height, width go down as you go deeper. The number of channels increases, though. 'Very deep' network.
+
+** ResNets
+
+Vanishing, exploding gradient kind of problems appear for convnets, too, mostly in very deep networks, of course.
+
+*** Residual blocks 
+
+Generally, networks work like:
+
+$$a^{[l]} \rightarrow linear \rightarrow ReLU \rightarrow a^{[l+1]} \rightarrow \dots$$ 
+
+In resnets, you add the output of a previous layer to the input to the activation function of a layer some steps down the line. For example: 
+
+$$a^{[l+2]} = g(z^{[l+2]} + a^{[l]})$$
+
+Layer $l$ and $l+1$ are then called a residual block. Sometimes called 'skip connection'.
+
+Residual blocks allow you to train much deeper networks. It helps with the training error. 
+
+In practice, often the training error goes back up after decreasing when adding more layers. ResNets help keep the training error going down.
+
+Why does it do so? We'll see an intuition now.
+
+** Why ResNets Work
+
+Let's look at an example. We have a Big 'plain' NN with ReLU and look at actiations  of layer $a^{[l]}$. In a second identical network, we add a ResBlock to $a^{[l]}$, s.t. $a^{[l+2]} = g(z^{[l+2]} + a^{[l]})$. If the weights $W^{[l+2]}$ and $b^{[l+2]}$ are zero, then the ResBlock gives the identity function (for ReLUs). So the identity function is *very easy to learn* for a ResBlock. In standard nets, these are difficult to learn. So in many cases, the layers make your result worse, not better. ResBlocks at least don't hurt your performance, but may improve it! 
+
+** Networks in Networks and 1x1 Convolutions
+
+A 1x1 conv gives a single real number for each 'depth slice'. It is basically having a fully connected layer (network) applying to each of the pixels. 
+
+Example:
+
+28x28x192 \rightarrow 28x28x32 with 32 filters of 1x1x192 size.
+
+Verry useful to build an INCEPTION NETWORK!!
+
+Also a way to shrink the number of channels to save on computation. Also adds non-linearity.
+
+** Inception Networks.
+
+Instead of choosing pooling, conv with particular filter size, 1x1, do them all in one, concatenating the results.
+
+Also, implement a bottleneck layer to improve computational cost for large convolution layers.
+
+The Inception network is just a bunch of inception layers. 
+
+** Open Source
+
+Often open source implementations are available if you want to replicate a paper's applications. Search for 'type of network + github'. 
+
+Workflow: Pick architecture that you like, look for open source implementation and go from there. Another advantage: Often pre-trained networks are available.
+
+** Transfer Learning
+
+Use hyperparameters from others! Yay.
+
+Reuse trained network and change the last layer to learn about your dataset. 'Freeze' all reused layers during training.
+
+If you have a larger training set, freeze fewer layers maybe? Use last few layers as initial configuration or start with fresh new layers. 
+
+If you have a lot of data, you may use the whole thing as initialization and retrain the whole net.
+
+For lots of computer vision applications, transfer learning is something you should almost always do, except if you have loads of data and computational resources (unlikely).
+
+** Data Augmentation
+
+More Data! with augmentation. 
+
+- Mirroring
+- random cropping
+- color shifting: Add distortions to RGB channels, e.g. +20,-20,+20, draw from distribution. This simulates different lighting conditions. Additionally, use PCA color augmentation (google it).
+
+How to implement during training? Fix one or multiple CPU thread to distort images from disk, per mini_batch training. Can run in parallel to training.
+
+** State of Computer Vision
+
+What's special about computer vision? 
+Object Detection \rightarrow Image recognition \rightarrow speech recognition 
+little data \rightarrow lots'o'data
+more hand-engineering ('hacks') \rightarrow less hand-engineering (simpler algorithms)
+
+Often, we don't have as much data as we need. Transfer learning helps a lot with little data. 
+
+Doing well on benchmarks is different from production/reality, but may help to find efficient algorithms. These help with benchmarking:
+- Ensembling: average outputs of multiple networks
+- Multicrop at test time: run classifier on multiple versions of test image and average results
+ 
+Use open source projects! Implementations! Use pretrained models!
+
+* Week 3: Object Detection
+
+** Object Localization
+
+Object localization vs. object detection.
+
+Image classification: Standard classifier (1 object)
+Classification wit localization: Additionally, locate the object within a bounding box. (1 object)
+Detection: Possibly multiple objects of different categories.
+
+Example. Classifier with categories via softmax
+- pedestrian
+- car
+- motorcycle
+- background (i.e. none of the above)
+
+Localization: Additionally outputs for bounding box of localized object. Determine bounding box via $b_x, b_y, b_h, b_w$.
+
+y consists of:
+- $p_c$ probability of is there an object?
+- $b_x, b_y, b_h, b_w$ bounding box
+- $c_1, c_2, c_3$ category probabilities.
+
+Training data if there is no object is a don't care '?'-filled data point. This matters for the definition of the loss function.
+
+If $y_1 = 1$ then $\mathcal{L}(\hat{y}, y) = (\hat{y_1} - y_1)^2 + (\hat{y_2} - y_2)^2 + \dots + (\hat{y_8} - y_8)^2$,
+
+If $y_1 = 0$ then $\mathcal{L}(\hat{y}, y) = (\hat{y_1} - y_1)^2$.
+
+In practice, log likelihood loss is also fine. 
+
+** Landmark Detection
+
+Just output x,y coordinates. For example, important feature points of a face, like bounds of faces. Use 64 or more coordinates? No problem! Just need applicable training data. Also helpful for pose detection.
+
+** Object Detection
+
+Sliding windows detection algorithm. Example: Cars. Training set with closely cropped car/non-car images. Train a network on this data. Then, take a /sliding window/ over your image and feed each windows slice into your conv net to check for cars. Once over is helpful, but now you repeat with a slightly larger region, and repeat again. Problem: costly computation. Before deep learning, this was kind of feasible. What's the solution? Convolutional implementation!
+
+** Convolutional Implementation of sliding windows
+
+Turn a fully connected layer into a convolutional layer. Take a $5\times 5\times 16$ layer and apply 400 filters of size $5\times 5$ to simulate an fc layer.
+
+Using fc layers like this, you can implement sliding windows via convolution. Take the same configuration for your conv net and run it on a larger image. The result is an 'image' that contains the results of the classification of the sliding window. You can control the parameters like stride of the sliding window through the size of an intermediate max pool layer. How exactly does it work? Needs more general explanation. It's hilariously poor in the video.
+
+** Output more accurate bounding boxes
+
+YOLO algorithm (You only look once) for the problem of bounding boxes not matching up with the objects in the picture. 
+
+Very similar to object localization algorithm, but with an output for $19\times19$ grid cells, with 8 output values each (in this example). This is a convolutions implementation, and runs quite fast!
+
+$$ \hat{y} = \begin{pmatrix}c \\ b_x \\ b_y \\ b_h \\ b_w \\ c_p \\ c_m \\ c_c \end{pmatrix} $$
+
+Where $0 \leq b_x, b_y, b_h, b_w \leq 1$.
+
+** Intersection over union
+
+Let's add to the yolo algorithm with IoU. Evaluate the cell you look at and the bounding box. Divide: size of intersection by size of union of cell and bounding box if one is found. Estimate the correctness of your prediction.
+
+I swear if the next algorithm name is also a pun I'm gonna lose it.
+
+** Non-max suppression example
+
+If you have multiple detects, you take the ones with high IoU (i.e. overlap) with the highest $p_c$ and remove them. So you 'suppress' the 'non-max' bounding boxes. 
+
+Example. 19\times19 grid cells. 
+- Discard all boxes with $p_c \leq threshold.
+- While there are remaining boxes:
+  - Pick the box with the largest $p_c$, output as prediction. 
+  - discard any remaining box with IoU \geq threshold with the largest $p_c$ box.
+
+Actually useful description of the algorithm pulled from quora:
+
+Input: A list of Proposal boxes B, corresponding confidence scores S and overlap threshold N.
+
+Output: A list of filtered proposals D.
+
+Algorithm:
+
+    Select the proposal with highest confidence score, remove it from B and add it to the final proposal list D. (Initially D is empty).
+    Now compare this proposal with all the proposals — calculate the IOU (Intersection over Union) of this proposal with every other proposal. If the IOU is greater than the threshold N, remove that proposal from B.
+    Again take the proposal with the highest confidence from the remaining proposals in B and remove it from B and add it to D.
+    Once again calculate the IOU of this proposal with all the proposals in B and eliminate the boxes which have high IOU than threshold.
+    This process is repeated until there are no more proposals left in B.
+
+** Anchor Boxes 
+
+Overlapping boxes can be a problem (e.g. person in front of car). Anchor boxes help by providing additional discriminatory capacity: Each object in an image is assigned to the grid cell with the midpoint and an anchor box for the grid cell with the highest IoU between grid cell and anchor box. The output then also has to include the anchor boxes, i.e. doubles in size for two anchor boxes (weird). This helps with two objects in the same grid cell with different anchor boxes (which are just bounding boxes).
+
+** YOLO Algorithm
+
+Training. Suppose $3\times3\times\2\times8$, where we have $3\times3$ grid cells and 2 anchor boxes and 8 output values, which are 5 + number of classes. 
+
+Run non-max suppression for each prediction class individually. 
+
+The YOLO algorithm is really good I swear!
+
+** Region proposals
+
+R-CNN (regions with CNNs) picks regions for which is make sense to run the conv net classifier on. Segmentation algorithm first to guess what could be an object. then run the classifier over the suggestions. ca 2000. Initially quite slow. Augment with a convolutional implementation. Then also use a convolutional network to propose the regions. (How? see paper.) Still quite a bit slower than YOLO tho.
+
+** From the Jupyter Notebook
+
+"You Only Look Once" (YOLO) is a popular algorithm because it achieves high accuracy while also being able to run in real-time. This algorithm "only looks once" at the image in the sense that it requires only one forward propagation pass through the network to make predictions. After non-max suppression, it then outputs recognized objects together with the bounding boxes.
+
+What you should remember:
+
+    YOLO is a state-of-the-art object detection model that is fast and accurate
+    It runs an input image through a CNN which outputs a 19x19x5x85 dimensional volume.
+    The encoding can be seen as a grid where each of the 19x19 cells contains information about 5 boxes.
+    You filter through all the boxes using non-max suppression. Specifically:
+        Score thresholding on the probability of detecting a class to keep only accurate (high probability) boxes
+        Intersection over Union (IoU) thresholding to eliminate overlapping boxes
+    Because training a YOLO model from randomly initialized weights is non-trivial and requires a large dataset as well as lot of computation, we used previously trained model parameters in this exercise. If you wish, you can also try fine-tuning the YOLO model with your own dataset, though this would be a fairly non-trivial exercise.
+
+* Week 4: Special applications: Face recognition & Neural style Transfer
+
+** Face Recognition
+
+Face verification vs. face recognition
+
+Verification
+- Input image, name/ID
+- Output whether match
+
+Recognition
+- database of $k$ persons
+- output ID if input image if any of K persons.
+
+Recognition problem much harder, since the error multiplies for each check compared to recognition systems.
+
+Focus first on verification systems.
+
+** One-shot learning
+
+This is a challenge: recognize a person with just one image (if only one picture). Not enough training data! 
+
+Instead, learn a similarity function $d(img_1, img_2)$, with d the degree of difference between images. Then threshold.
+
+Also better for new members of the team. 
+
+** Siamese Network 
+
+Fix some layer deep into the network which is the encoding of the input, say a 128 fc layer. Do the same with a second image. Calculate $d(x^{(1)},x^{(2)}) = || f(x^{(1)}, f(x^({2)} ||^2)$
+
+Learn parameters so that: 
+- If the same person, distance small.
+- If a different person, distance large.
+
+How to define the objective function here?
+
+** Triplet Loss 
+
+Data triplet: One anchor image A, a positive image P and a negative image N. 
+
+Want: $d(A,P) \leq d(A,N)$
+
+$$d(A,P) - d(A,N) + \alpha \leq 0$$
+
+$$\mathcal{L}(A,P,N) = max(||f(A)-f(P)||^2 - ||f(A)-f(N)||^2 + \alpha, 0)$$
+
+The cost is then the simple sum over all triplets. So the training set needs to be in triplet form. You need multiple pictures of the same person for this to work.
+
+Choose triplets: 
+- randomly problematic, since then it's easily satisfied. Choose hard problems.
+- Choose such that $d(A,N) ~ d(A,P)$.
+
+** Face Verification and Binary Classification problem
+
+Also possible to learn the similarity function with a last layer that consists of only one unit with a sigmoid function over the difference of the two encodings, i.e.
+
+$$ \hat{y} = \sigma(\sum w_k |f(x^{(i)}_k - f(x^{(j)})_k| + b) $$
+ 
+for example. $\Chi^2$ -similarity might work, too.
+
+this system might work very well, too. Your training set consists in pairs of images with labels whether they're the same person or not.
+
+** Neural Style Transfer
+
+Take some content (C) and recreate it (G) in the /style/ of another (S). E.g. Stanford in the style of Van Gogh.
+
+For this, get some better intuition into what these layers in a conv net are really computing.
+
+** What are deep Convnets really learning?
+
+Suppose Alexnet like conv net. 
+- Pick a unit in layer 1. Find the nine image patches or images in the training set that maximize the unit's activation. Repeat for other units. Also, repeat for deeper layers, too. typically, deeper units are activated by a larger portion of the image. Deeper layers tend to get activated by larger patterns, while earlier layer have simple shapes as activation (e.g. edges etc). Deeper layers then get activated by types of object.
+
+** Cost function
+
+$$J(G) = \alpha J_{content}(C,G) + \beta J_{style}(S,G)$$
+
+How to generate the new image? 
+1. Initialize G randomly
+2. Use gradient descent to minimize J(G)
+  $$G:=G- \frac{\alpha}{2G} J(G)$$
+
+** Content Cost function
+
+- Say you use hidden layer $l$ to compute cost, where $l$ is neither too shallow nor too deep. If too shallow, then too pixel perfect. If too high, too conceptual. Needs to look similar!
+- Use pre-trained ConvNet (E.g. VGG network)
+- Let $a^{[l](C)}$ be the activation of layer $l$ of C, G analogously.
+- if both activations are similar, both images have similar content.
+$$J_{content}(C,G) = || a^{[l](C)} - a^{[l](G)} ||^2$$
+
+** Style Cost function 
+
+What does Style of image mean? Take some layer $l$ as definitive of the style. Define style as correlation between activations across channels. 
+
+Define style matrix. 
+
+Let $a^{[l]}_{i,j,k}$ be the activation at $i,j,k$.
+
+$G^{[l]}$ is an $n^{[l]}_C \times n_C^{[l]}$ matrix which measures the correlation between the channels of layer $l$.
+
+The additional superscript $(S)$ and $(G)$ refer to the style and generated image, respectively.
+
+$$G^{[l](G)}_{kk'} = \sum^{n_H}_{i=1}\sum_{j=1}^{n_W} a^{[l](G)}_{i,j,k} a^{[l](G)}_{i,j,k'}$$
+
+In linear algebra, these style matrices are called 'gram matrix'.
+
+$$J^{[l]}_{style}(S,G) = \frac{1}{(2n^{[l]}_H n^{[l]}_W n^{[l]}_C)^2} \sum_k \sum_{k'} (G^{[l](S)}_{kk'} - G^{[l](G)}_{kk'})^2$$
+
+Better results with multiple layers!
+
+$$J_{style}(S,G) = \sum_l \lambda^{[l]} J_{style}^{[l]} (S,G)$$
+
+where lambda is a hyper parameter. 
+
+** 1D and 3D generalization of conv nets
+
+1D: ekg heartbeat. Say 14 \times 1 * 5 \times 1 \rightarrow 10 \times 16 (if you have 16 filters). 
+
+But usually, for 1-d data you'd usually use recurrent neural nets.
+
+The case for 3D is completely straightforward. Useful for CAT scans, or movie data, etc p.p. 
+
+Guess what! This generalizes arbitrarily. 
+
+** Notes from the Jupyter Notebook?
+
+How is it achieved that the gradient descent is performed on the image and not on the model's parameters? Even after completing the assignment, it hasn't become clear :(
+
+G(gram)i,jG(gram)i,j: correlation
+
+The result is a matrix of dimension (nC,nC)(nC,nC) where nCnC is the number of filters (channels). The value G(gram)i,jG(gram)i,j measures how similar the activations of filter ii are to the activations of filter jj.
+G(gram),i,iG(gram),i,i: prevalence of patterns or textures
+
+    The diagonal elements G(gram)iiG(gram)ii measure how "active" a filter ii is.
+    For example, suppose filter ii is detecting vertical textures in the image. Then G(gram)iiG(gram)ii measures how common vertical textures are in the image as a whole.
+    If G(gram)iiG(gram)ii is large, this means that the image has a lot of vertical texture.
+
+By capturing the prevalence of different types of features (G(gram)iiG(gram)ii), as well as how much different features occur together (G(gram)ijG(gram)ij), the Style matrix GgramGgram measures the style of an image. 
+

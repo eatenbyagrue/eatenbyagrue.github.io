@@ -1,0 +1,725 @@
+#+TITLE: Notes on Coursera, Deep Learning Specification, Neural Networks and Deep Learning
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+
+* Week 1 Introduction to Deep Learning
+** Introduction
+
+AI is the new electricity!!1 
+
+Overview
+1. Build Neural Networks to recognize cats - 4 weeks
+2. Improving Deep Neural Networks - 3 weeks
+3. Structure Machine Learning projects - 2 weeks
+4. Convolutional Neural Networks for images
+5. Sequence models for Natural language processing.
+
+** What's a Neural Net?
+
+Standard linear regression problem: housing prices. Instead use ReLu, rectified linear unit, to fit the data.
+
+$size x \rightarrow 'neuron' \rightarrow price y$
+
+Interestingly, here the output of a neuron gets interpreted with a semantic value. Anywho, the nets are most useful in the supervised learning example.
+
+** Supervised Learning with Neural Networks
+
+Applications
+
+| Input             | Output                 | Application         | Type of NN |
+|-------------------+------------------------+---------------------+------------|
+| Home features     | Price                  | Real Estate         | Standard   |
+| Ad, user info     | Click on ad?           | Online Advertising  | Standard   |
+| Image             | Object                 | Photo tagging       | CNN        |
+| Audio             | Text transcript        | Speech recognition  | RNN        |
+| English           | Chinese                | Machine translation | RNN        |
+| Image, Radar info | Position of other cars | Autonomous driving  | Hybrid     |
+
+Supervised Learning uses structured data (mostly labeled). Unstructured Data like raw audio, images, text are much harder to process.
+
+** Why is Deep Learning taking off?
+
+Scale drives deep learning progress. If you plot the performance as a function of the amount of labeled data, standard algorithms (SVM, logistic regression) taper off. Small neural nets behave similarly. Larger nets show much better performance with huge amounts of data. So scale means size of network and amount of labeled data. 
+
+$m$: Number of training examples.
+$(x,y)$: Labeled data point.
+
+For small training sets, most algorithm perform very similarly, and then it depends on ability to handcraft features. 
+
+Scale:
+- Data
+- Computation
+  Ability to use larger nets.
+- Algorithms 
+  e.g. switch from sigmoid to ReLU made gradient descent much faster.
+
+** In this course: 
+
+See introduction for overview
+
+Week 1: Introduction
+Week 2: Basics of Neural Network Programming. First Programming Exercise
+Week 3: One hidden layer Neural Networks
+Week 4: Deep Neural Networks
+
+** Interview with Geoff Hinton
+
+Old psychologist view that a concept is just a big bundle of features. The AI view was much more structured, like in a semantic graph. Backprop showed that you could feed a structured view to a neural net, which then generates features, from which it is able to generalize.
+
+Hinton still fondly remembers Boltzmann machines, which are quite beautiful in his mind. Restricted Boltzmann machines are actually quite effective. 
+
+Stacking RBMs on top of each other had quite the impact, called Deep Belief Nets. 
+
+The BRAIN might actually implement back-propagation in some form. Hinton gives an evolutionary argument for it. 
+
+Capsules are a way to represent rooting by agreement, where features have additional properties. 
+
+Hinton was all about backprop in his /intellectual history/. But then he got into unsupervised learning. But what's worked recently is supervised learning. Hinton still believes that unsupervised learning will be crucially important. Variational Autoencoders, Generative Adversarial Nets, could become breakthroughs.  
+
+Advice: Read the literature, but don't read too much of it. Which seems to go against common wisdom. Read a bit of the literature. Notice something that everybody's doing wrong, and do it right. There is no point not trusting your intuitions. Never stop programming! Don't be to worried if other's say is nonsense. For new grad students: Find an adviser who was similar beliefs to you. Do a PhD or join a company?  
+
+In the early days, von neumann and turing didn't believe in symbolic AI! Then symbolic AI took over. Now, there is a different view where at thought is just some neural activation. the symbolic guys made a big mistake. Input is a string of words, output is a string of words, what comes in between must then also be a string of words. Wrong! LoT is a silly idea. A lot of people still think thoughts have to be symbolic expressions.
+
+* Week 2: Neural Network Basics
+
+** Binary Classification
+
+Couple of techniques very important. 
+
+- Not use for-loops, instead vectorization. 
+- organize computation in forward propagation step + backward propagation step.
+
+Here with logistic regression to start out to binary classify images. Assume a 64 by 64 pixel image, with 3 256 color channels, such that $n = 64\times64\times3 = 12288$ features. Further notation:
+
+$$(x,y), x\in \mathbb{R}^{n_x}, y \in \{0,1\}$$
+$m$ training examples: $\{(x^{(1)},y^{(1)}, \dots, (x^{(m)},y^{(m)})\}$
+
+$X$ is a $n_x \times m$ matrix, $Y$ is a $1 \times m$ matrix. Such that $x^{(i)}$ is a *column* of $X$. This apparently makes some computations easier to implement.
+
+** Logistic regression
+
+Given $x$, want $\hat{y} = P(y=1|x)$. $x \in \mathbb{r}^n$, $0 \leq \hat{y} \leq 1$.
+
+Parameters: $w \in \mathbb{R}^n, b\in \mathbb{R}$.
+
+Output $\hat{y} = \sigma(w^Tx+b)$.
+
+$\sigma(z) = \frac{1}{1 + e^{-z}}$
+
+If $z$ large then $\sigma(z)$ tends to 1. If $z$ large negative then $\sigma(z)$ tends to 0. If $z$ tends to 0 then $\sigma(z)$ tends to 0.5.
+
+In the previous course, $b$ was called $\theta_0$, and $\theta_1,\dots,theta_n$ is called $w$. It's more helpful building neural nets this way.
+
+** Logistic Regression Cost Function
+
+Given $\{(x^{(1)},y^{(1)}, \dots, (x^{(m)},y^{(m)})\}$, we want $\hat{y}^{(i)} \sim y^{(i)}$ 
+
+Loss (error) function $\mathcal{L}(\hat{y},y)$ measures how good our output $\hat{y}$ is when the true label is $y$.
+
+$$\mathcal{L}(\hat{y},y) = -(y \log \hat{y}) + (1-y) log(1-\hat{y})$$ 
+
+Cost function measures the entire training set:
+
+$$J(w,b) = \frac{1}{m} \sum_{i=1}^m\mathcal{L}(\hat{y}^{(i)},y^{(i)})$$
+
+Logistic regression can be viewed as a very small neural network!
+
+** Gradient Descent
+
+The Cost functions is the average of the Lost function over all training examples. Now, find $w,b$ such that the surface $J(w,b)$ is minimal. $J$ is a convex function guarantees finding the global optimum.
+
+Gradient descent takes steps towards the optimum in the direction of the gradient. 
+Repeat: 
+$$ w := w - \alpha \frac{\partial J(w,b)}{\partial w} = w - \alpha dw$$. 
+$$ b := b - \alpha \frac{\partial J(w,b)}{\partial b} = b - \alpha db$$.
+This always goes down the gradient towards the minimum. 
+
+** Derivatives
+
+Derivative just means slope! Well... Read $\frac{df(a)}{da}$ as the slope of $f(a)$ at $a$.
+
+The rest is really basic derivatives 101. Remember that for $f(a) = log_e(a)$, $\frac{df(a)}{f(a)} = frac{1}{a}$.
+
+** Computation Graph
+
+Explains why the computation is divided into forward/backward pass. 
+
+Organizes computation in the left-to-right direction for computing the cost function. backward propagation yields the derivative.
+
+** Derivatives with a Computation Graph
+
+Suppose $J(a,b,c) = 3(a + bc)$. Graph: $u=bc, v=a+u$. Then: $\frac{dJ}{da} = \frac{dJ}{dv}\frac{dv}{da} = 3 \times 1 = 1$. That's just the chain rule. 
+
+$$\frac{dJ}{du} = \frac{dJ}{dv} = 3 \times 1$$. 
+$$\frac{dJ}{db} = \frac{dJ}{du} \frac{du}{db} = \frac{dJ}{dv}\frac{dv}{du} \frac{du}{db} = 3 \times 1 \times c$$. 
+
+This is a right-to-left computation to determine the derivative.
+
+As a coding convention, $\frac{dJ}{da}$ is written as ~da~, and similar.
+
+** Logistic Regression Gradient Descent
+
+Using a computation graph, which is a bit of an overkill for logistic regression, but useful later. 
+
+$$x_1,w_1,x_2,w_2,b \rightarrow z = w_1x_1 + w_2x_2 + b \rightarrow a = \sigma(z) \rightarrow \mathcal{L}(a,y)$$
+
+Backwards computation. We want to get the derivative of $\mathcal{L}$ by the weights $w_1,w_2$.
+
+$$\frac{d\mathcal{L}(a,y)}{da} = \frac{-y}{a} + \frac{1-y}{1-a},$$ 
+
+$$\frac{da}{dz} = a(a-1),$$
+
+$$\frac{d\mathcal{L}}{dz} = \frac{d\mathcal{L}}{da}\frac{da}{dz} = a - y,$$
+
+$$\frac{\partial \mathcal{L}}{\partial w_1} = x_1 \frac{d\mathcal{L}}{dz},$$ $w_2$ analogously.
+
+This is for a single training example, but we need the cost function for all examples. 
+
+Note. The use of $\partial$ / $d$ seems not quite consistent.
+
+** Gradient Descent on $m$ Examples.
+
+$$J(w,b) = \frac{1}{m} = \sum_{i=1}{m} \mathcal{L}(a^{(i)},y^{(i)})$$, and then
+
+$$\frac{\partial}{\partial w_1} J(w,b) = \frac{1}{m} \sum_{i=1}^m \frac{\partial}{\partial w_1} \mathcal{L}(a^{(i)},y^{(i)})$$.
+
+*** Algorithm before Vectorization.
+
+In the following, $a^{(i)}$ is written as ~a_i~ etc.
+
+#+BEGIN_SRC python
+J=0; dw_1=0; dw_2 =0; db=0
+for i=1 to m
+  z_i = w^T*x_i + b
+  a_i = sigma(z_i)
+  Jt = -[y_i * log(a_i) + (1 - y_i)*log(1-a_i)]
+  d_z_i = a_i - y_i
+  dw_1 += x_i_1 dz_i
+  dw_2 += x_i_2 dz_i
+  ...
+  db += dz_i
+J /= m
+dw_1 /= m; dw_2 /= m; db/=m.
+w_1 -= alpha*dw_1
+w_2 -= alpha*dw_2
+b -= alpha*db  
+#+END_SRC
+
+Note that ~dw_1~ is used cumulatively over all training examples. This code is comparatively slow, we should be using vectorization instead.
+
+** Vectorization
+
+"the art of getting rid of explicit for loops in your code" - makes use of optimization techniques not available otherwise.
+
+What is it?
+
+$z = w^Tx + b$, where $w,x$ are column vectors.
+
+Non-vectorial:
+#+BEGIN_SRC python
+z = 0
+for i in range(n_x):
+  z += w[i] * x[i]
+z += b
+#+END_SRC
+
+Vectorized:
+#+BEGIN_SRC python
+z = np.dot(w,x) + b
+#+END_SRC
+
+The second version is /wildly/ faster.
+
+Is this because of the GPU? Already on the CPU, it's much faster because of parallelization. 
+
+Rule of thumb: Whenever possible, use vectorization. 
+
+$$u = Av$$
+$$u_i = \sum_j A_{ij}v_j$$
+
+#+BEGIN_SRC python
+u = np.zeros(n,1)
+for i ...
+  for j ...
+    u[i] =+ A[i][j] * v[j]
+#+END_SRC
+
+vs. 
+
+#+BEGIN_SRC python
+u = np.dot(A,v)
+#+END_SRC
+
+Element-wise operations on vector:
+
+#+BEGIN_SRC python
+u = np.exp(v)
+u = np.log(v)
+u = v**2
+u = 1/v
+#+END_SRC
+
+What's the logistic regression algorithm vectorized?
+
+#+BEGIN_SRC python
+J=0; db=0
+dw = np.zeros((n__x,1))
+for i=1 to m
+  z_i = w^T*x_i + b
+  a_i = sigma(z_i)
+  Jt = -[y_i * log(a_i) + (1 - y_i)*log(1-a_i)]
+  d_z_i = a_i - y_i
+  dw += x_i*dz_i
+  db += dz_i
+J /= m; dw /= m; db/=m
+w_1 -= alpha*dw_1
+w_2 -= alpha*dw_2
+b -= alpha*db  
+#+END_SRC
+
+But it can be even more vectorized! Why did I write up the above then.
+
+** Vectorized Logistic Regression
+
+Forward Pass: 
+
+$$z^{(i)} = w^Tx^{(i}) + b$$
+$$a^{(i)} = \sigma(z^{(1)}$$
+
+Strategy: Construct a row vector containing all $$z's$$.
+
+$$[z^{(1)},\dots,z^{(m)}] = w^T X + [b, \dots, b] = [w^Tx^{(1)} + b, \dots, w^Tx^{(n)} + b].$$
+
+Remember, $X$ is a matrix with the training examples as *columns*.
+
+#+BEGIN_SRC python
+z = np.dot(w.T,x) + b
+#+END_SRC
+
+$b$ gets automatically broadcasted by python to a vector.
+
+Similarly for $$A = [a^{(1)}, \dots, a^{(m)}] = \sigma(z).$$ See more in programming exercise.
+
+Now on to the gradient. This is notationally quite sloppy, as Andrews Ng mixes mathematical and python notation freely without apparent consistency.
+
+$$dz^{(1)} = a^{(i)} - y^{(i)}$$
+$$dZ = [dz^{(1)}, dots, dz^{(m)}]$$
+$$A = [a^{(1)},\dots,a^{(m)}], Y=[y^{(1)},\dots,y^{(m)}]$$
+$$dZ = A-Y = [a^{(1)}-y^{(1)},\dots,a^{(m)} - y^{(m)}]$$
+
+$$db = \frac{1}{m} \sum^m_{i=1}dz^{(i)}$$
+#+BEGIN_SRC python
+1/m * np.sum(dZ)
+#+END_SRC
+$$dw = \frac{1}{m}XdZ^T$$
+Python code in the exercise.
+
+*** Summary Code
+#+BEGIN_SRC python
+Z = np.dot(w.T,X) + b
+A = sigma(Z)
+dZ = A-Y
+dw = 1/m XdZ^T (=1/m * np.dot(X,dZ.T)
+db = 1/m * np.sum(dZ)
+w-= alpha*dw
+b-= alpha*db
+#+END_SRC
+
+Note: Write dimensions to each variable to be clear. 
+
+By the way. you still need a for-loop to go through all gradient descent steps.
+
+** Broadcasting
+
+Let $A$ be a $3\times 4$ matrix. How to calculate the percentages of each attribute? Note again that the data points are in the columns. 
+
+~A.sum(axis=0)~ sums the columns. 
+
+~percentages = 100*A/cal.reshape(1,4)~ gives the percentages.
+
+~axis=0~ sums the columns, result is a row vector. ~axis=1~ sums the columns, result is a column vector.
+
+$(m,n)$ matrix $+-*/ (1,n)$ vector: python expands the vector to a $(m,n)$ matrix and copies the rows. 
+
+$(m,n)$ matrix $+-*/ (m,1)$ vector: python expands the vector to an $(m,n)$ matrix copying the columns.
+
+** Python Tips & Tricks
+
+Some bugs are really strange! Don't use data structures, where the shape is ~(5,)~ [rank 1 array]. You get this from ~np.random.randn(5,)~. Use instead: ~np.random.randn(5,1)~ or ~...(1,5)~. Commit to either a columns or row vector!
+
+Test by ~assert(a.shape == (5,1))~
+
+
+** Logistic Regression Cost Function Explanation
+
+If $y = 1: p(y|x) = \hat{y}$.
+If $y = 0: p(y|x) = 1 - \hat{h}$.
+
+$$p(y|x) = \hat{y}^y(1-\hat{y})^{(1-y)}$$
+
+$$\log{p(y|x)} = y\log(\hat{y}) + (1-y)\log{(1-\hat{y})}$$
+
+Assuming iid, the same reasoning works for the total cost function. We're basically using maximum likelihood estimation minimizing the cost function.
+
+** Interview: Peter Abbee
+
+Robotics and Machine Learning Researcher. Supervised Learning is an input-output assignment problem. Reinforcement Learning is different. AI changed a bit. John McCarthy had a very different approach. I learned to make sure to see the connection of all the math to what you're actually applying it to. Now is a really good time to do AI. SO many possibilities. Use self study. Check out Andrew Karpathy's Deep Learning course. Berkely has a course on Deep Reinforcement Learning. Do a PhD or get a job? Has to do with how much mentoring you can get. [[https://www.youtube.com/playlist?list=PLkFD6_40KJIwhWJpGazJ9VSj9CFMkb79A]]
+It would be nice if reinforcement learning could transfer their learned configurations to other applications.
+
+** Notes from the Programming Exercise
+
+**What you need to remember:**
+
+Common steps for pre-processing a new dataset are:
+- Figure out the dimensions and shapes of the problem (m_train, m_test, num_px, ...)
+- Reshape the datasets such that each example is now a vector of size (num_px \* num_px \* 3, 1)
+- "Standardize" the data
+
+A trick when you want to flatten a matrix X of shape (a,b,c,d) to a matrix X_flatten of shape (b∗∗c∗∗d, a) is to use:
+~X_flatten = X.reshape(X.shape[0], -1).T      # X.T is the transpose of X~
+
+The main steps for building a Neural Network are:
+1. Define the model structure (such as number of input features) 
+2. Initialize the model's parameters
+3. Loop:
+   - Calculate current loss (forward propagation)
+   - Calculate current gradient (backward propagation)
+   - Update parameters (gradient descent)
+
+Now that your parameters are initialized, you can do the "forward" and "backward" propagation steps for learning the parameters.
+
+**Exercise:** Implement a function `propagate()` that computes the cost function and its gradient.
+
+**Hints**:
+
+Forward Propagation:
+- You get X
+- You compute $A = \sigma(w^T X + b) = (a^{(1)}, a^{(2)}, ..., a^{(m-1)}, a^{(m)})$
+- You calculate the cost function: $J = -\frac{1}{m}\sum_{i=1}^{m}y^{(i)}\log(a^{(i)})+(1-y^{(i)})\log(1-a^{(i)})$
+
+Here are the two formulas you will be using: 
+
+$$ \frac{\partial J}{\partial w} = \frac{1}{m}X(A-Y)^T\tag{7}$$
+$$ \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (a^{(i)}-y^{(i)})\tag{8}$$
+
+**What to remember from this assignment:**
+1. Preprocessing the dataset is important.
+2. You implemented each function separately: initialize(), propagate(), optimize(). Then you built a model().
+3. Tuning the learning rate (which is an example of a "hyperparameter") can make a big difference to the algorithm. You will see more examples of this later in this course!
+* Week 3: Shallow Neural Nets
+
+** Neural Networks Overview
+
+Last week: Logistic Regression with computation graph. Neural nets are more of the same! The computation graph looks /very/ similar.
+
+** Neural Network Representation
+
+Single Hidden Layer Network. Input Layer (with three units), Hidden Layer (with 4 units), Output Layer (one unit). You know the drill. Hidden as in not seen in the training set. 
+
+$a^{[0]} = x$ are the activations of the input.
+$a^{[1]}$ with $a^{[1]}_i$ enumerating the activations of node $i$ in layer 1. 
+$a^{[2]} = \hat{y}$ is the activation of the output node (if there is only one).
+
+** Computing a Neural Network's Output
+
+Each node kinda does logistic regression on its inputs (provided we use a sigmoid activation function). 
+
+$$z^{[1]} = w^{[1]T}_1 x + b_1^{[1]}$$ 
+$$ a^{[1]}_1 = \sigma(z_1^{[1]})$$
+
+For four hidden layer units, we run logistic regression four times and have their parameters $w^{[1]}_i$ in a matrix $W^{[1]}$. Then: 
+
+$$z^{[1]} = W^{[1]}x + b^{[1]}$$ 
+$$(4,1) = (4,3)\times(3,1) + (4,1)$$
+$$a^{[1]} = \sigma(z^{[1]})$$ 
+$$z^{[2]} = W^{[2]}x + b^{[2]}$$ 
+$$(1,1) = (1,4)\times(4,1) + (1,1)$$
+$$a^{[2]} = \sigma(z^{[2]})$$ 
+
+** Vectorizing Across Multiple Examples
+
+$a^{[2](i)}$ refers to the only activation in layer 2 for example $i$.
+
+$X$ is an $(n_x,m)$ dimensional matrix.
+
+$$Z^{[1]} = W^{[1]}X + b^{[1]}$$
+$$A^{[1]} = \sigma(z^{[1]})$$
+$$Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]}$$
+$$A^{[2]} = \sigma(Z^{[2]})$$
+
+Note that these sets of equations look like following a pattern, especially with $X = A^{[0]}$. More on this lat'r.
+
+$$Z^{[1]} = \begin{pmatrix} | & \dots & | \\ z^{[1](1)} & \dots & z^{[1](m)} \\ | & \dots & | \\ \end{pmatrix}$$
+
+$dim(Z^{[1]}) = dim(A^{[1]}) = (n_1, m)$, where $n_1$ is the number of nodes in layer 1.
+
+** Explanation for Vectorized Implementation
+
+
+$$z^{[1](1)} = W^{[1]}x^{(1)} + b^{[1]}$$ 
+
+gives you a column vector. Similarly for $z^{[1](2)}$ etc.
+
+~~~ The explanation is almost good, but misses crucial points to be helpful, like recourse to the network ~~~
+
+So far so good. Let's look at more activation functions. 
+
+** Activation functions
+
+- sigmoid(z)
+- tanh(z) is a shifted (and stretched) version of sigmoid.
+
+Ng never uses the sigmoid activation function anymore. Except! For the output layer sometimes. It is OK to mix and match, if the forward and backward propagations are updated accordingly.
+
+- ReLu: $a = max(0,z)$. Increasingly the default choice for hidden layers. Derivative is 0 or 1. Easypeasy. 
+- Leaky ReLU: $a = max(0.01z,z)$
+
+tanh is strictly superior than sigmoid for hidden layers. Default choice is ReLU or leaky ReLU, though.
+
+In general, you often have a lot of choices. 
+
+** Why do we NEED Non-linear Activation Functions?
+
+Suppose an identity (=linear) activation function. Then the model is computing $\hat{y}$ as a linear function of your inputs. This is easily seen from the algebra. Then, how matter how many layers you have, you are always computing a linear activation function! The model is then no more expressive than standard logistic regression. Sometimes it is OK to use linear activation functions in the output layer, namely is $\hat{y} \in \mathbb{R}$.
+
+** Derivatives of Activation functions
+
+*** Sigmoid
+
+$$g(z) = \frac{1}{1+\exp{-z}}$$
+$$\frac{d}{dz}g(z) = g'(z) = g(z)(1-g(z))$$.
+
+*** Tanh
+
+$$g(z) = tanh(z) = \frac{\exp{z} - \exp{z}}{\exp{z} + \exp{-z}}$$
+$$g'(z) = 1 - tanh(z)^2$$
+
+*** ReLU 
+
+$$g(z) = max(0,z)$$
+$$g'(z) = \begin{cases}0 & \text{ if } z < 0 \\ 1 & \text{ if } z \geq 0\end{cases}$$
+
+technically undefined for 0 but in proactive we cheat.
+
+*** Leaky ReLU
+
+$$g(z) = max(0.01,z)$$
+$$g'(z) = \begin{cases}0.01 & \text{ if } z < 0 \\ 1 & \text{ if } z \geq 0\end{cases}$$
+
+** Gradient Descent
+
+Single hidden layer NN. 
+Parameters with dimensions: 
+
+$$W^{[1]}, b^{[1]}, W^{[2]},  b^{[2]}, $$
+$$(n^{[1]},n^{[0]}),(n^{[1]},1),(n^{[2]},n^{[1]}),(n^{[2]},1),$$
+where $n_x = n^{[0]}, n^{[1]}, n^{[2]} = 1$.
+
+Cost function: $$J(W^{[1]}, b^{[1]}, W^{[2]}, b{[2]}) = \frac{1}{m} \sum^n_{i=1} \mathcal{L}(\hat{y},y),$$ where $\hat{y} = a^{[2]}$. 
+
+*** Formulas for computing derivatives
+
+Forward propagation
+
+$$Z^{[i]} = W^{[1]}X + b^{[1]}$$
+$$A^{[1]} = g(z^{[1]})$$
+$$Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]}$$
+$$A^{[2]} = \sigma(Z^{[2]})$$
+
+Backpropagation:
+
+$$dZ^{[2]} = A^{[2]} - Y$$
+$Y$ is a $(1,m)$ matrix.
+$$dW^{[2]} = \frac{1}{m}dZ^{[2]}A^{[1]T}$$
+$$db^{[2]} = \frac{1}{m} \sum_{i=1}^m dZ^{[2](i)} $$
+Here is the line of code to calculate the last formula above:
+#+BEGIN_SRC python
+db2 = 1/m * np.sum(dZ2, axis = 1, keepdims = True)
+#+END_SRC
+$$dZ^{[1]} = W^{[2]T}dZ^{[2]} * \frac{d}{dz}g^{[1]}(Z^{[1]})$$
+with dimensions $(n^{[1]},m)$.
+$$dW^{[1]} = \frac{1}{m}dZ^{[1]}X^T$$
+$$db^{[1]} = \frac{1}{m} \sum_{i=1}^m dZ^{[1](i)} $$
+
+
+** Backpropagation Intuition
+
+Look at the computation graph. (not pictured here)
+
+$$dim(W^{[2]})  =(n^{[2]},n^{[1]})$$
+$$dim(Z^{[2]})  =dim(dZ^{[2]}) = (n^{[2]},1)$$
+$$dim(Z^{[1]})  =dim(dZ^{[1]}) = (n^{[1]},1)$$
+
+** Random Initialization
+
+Initializing the weights to 0 won't work. What happens is that the nodes will be computing the same function, and thus never deviate in the learning process. The result is a logistic regression, basically, instead of a neural net.
+
+Instead, use random initialization. Use very small values (rand times 0.01 for shallow networks). If the weights are too large, gradient descent might be hindered, especially with tanh or sigmoid activation functions.
+** Interview with Ian Goodfellow
+
+Good way to break into the industry is to have a github account with useful projects on them. While learning, have a project! 
+
+** Notes from the programming exercise
+
+Backpropagation can be summarized as (commented out in the source code, the notation shown there is simpler):
+
+$$\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } = \frac{1}{m} (a^{[2](i)} - y^{(i)})$$
+
+$$\frac{\partial \mathcal{J} }{ \partial W_2 } = \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } a^{[1] (i) T}$$
+
+$$\frac{\partial \mathcal{J} }{ \partial b_2 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)}}}$$
+
+$$\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} } =  W_2^T \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } * ( 1 - a^{[1] (i) 2}) $$
+
+$$\frac{\partial \mathcal{J} }{ \partial W_1 } = \frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} }  X^T $$
+
+$$\frac{\partial \mathcal{J} _i }{ \partial b_1 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)}}}$$
+
+- Note that $*$ denotes elementwise multiplication.
+- The notation you will use is common in deep learning coding:
+  - dW1 = $\frac{\partial \mathcal{J} }{ \partial W_1 }$
+  - db1 = $\frac{\partial \mathcal{J} }{ \partial b_1 }$
+  - dW2 = $\frac{\partial \mathcal{J} }{ \partial W_2 }$
+  - db2 = $\frac{\partial \mathcal{J} }{ \partial b_2 }$
+
+* Week 4 Deep Neural Networks
+
+What's a deep Neural Net? Well, with more than one hidden layer! 
+
+Notation
+- $L:$ number of layers
+- $n^{[l]}:$ number of units in layer $l$
+- $a^{[l]}:$ activations in layer $l$
+- $a^{[l]} = g^{[l]}(z{[l]})$
+- $W^{[l]}:$ Weights for $z^{[l]}$.
+
+** Forward Propagation in a Deep Network
+
+First for a single training example, $a^{[0]} = x$.
+
+$$z^{[1]} = W^{[1]}a^{[0]} + b^{[1]}$$
+$$a^{[1]} = g{[1]}(z^{[1]})$$
+$$z^{[2]} = W^{[2]}a^{[1]} + b^{[2]}$$
+$$a^{[2]} = g{[2]}(z^{[2]})$$
+$$\dots$$
+$$a^{[4]} = g^{[4]}(z^{[4]}) = \hat{y}$$
+
+In general: 
+$$z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]}$$
+$$a^{[l]} = g^{[l]}(z^{[l]})$$
+
+Vectorized:
+Take z vectors for a training example and stack them as columns in $Z$, similarly for $A$.
+$$Z^{[l]} = W^{[l]}A^{[l-1]} + b^{[l]}$$
+$$A^{[l]} = g^{[l]}(Z^{[1]})$$
+And compute in a for loop, $l=1,\dots,4$. This is one of the few cases where we still have a for loop.
+
+Think very systematically and carefully through your matrix dimensions!
+
+** Getting Your Matrix Dimensions Right
+*** Single Training Example
+Suppose a fully connected network with $n^{[0]} = 2, n^{[1]} = 3, n^{[2]} = 5, n^{[3]} = 4, n^{[4]} = 2, n^{[5]} = 1$.
+
+$$Z^{[1]} = W^{[1]}x + b^{[1]}$$
+$$(3,1) = (3,2)\times(2,1)$$
+$$(n^{[1]},1) = (n^{[1]}\times(n^{[0]},1)$$
+
+generally:
+$$W^{[l]}, dW^{[l]}: (n^{[l]}, n^{[l-1]}$$
+$$a^{[l]}: (n^{[l]}, 1)$$
+$$b^{[l]}: (n^{[l]}, 1)$$
+
+*** Vectorized
+$$Z^{[l]} = W^{[l]}A^{[l-1]} + b^{[l]}$$
+$$Z^{[l]}, A^{[l]} : (n^{[l]}, m)$$
+$$b^{[l]}: (n^{[l]},1) \rightarrow_{broadcasting} (n^{[l]}, m)$$.
+
+** Why Deep Representations?
+
+Why do deep networks work so well? 
+Well, what is it computing? Suppose picture of face. First hidden layer might be sensitive to edges. Second layer sensitive to facial features like noses etc. Later layers full face. Simplification! Makes more sense when talking about Convnets.
+
+For audio, it might be | low level audio features | phonemes | words | sentences, phrases.
+
+This abstraction is SOMEWHAT related to the human brain. But let's forget about that now.
+
+Different Idea from Circuit theory. Informally: There are functions you can compute with a small L-layer deep neural network that shallower networks require exponentially more hidden units to compute. Can be seen straightforwardly when thinking about XOR. 
+
+Deep Learning is just a neural network rebranding.
+
+** Building Blocks of Neural Networks
+
+- Forward step for layer $l$:
+  Input $a^{[l-1]}$, output $a^{[l]}$, use $W^{[l]}, b^{[l]}$.
+- Backward step for layer $l$:
+  Input $da^{[l]}$, output $da^{[l-1]}$, use cached $z^{[l]}$ and $W^{[l]}, b^{[l]}$. Also compute $dW^{[l]}, db^{[l]}$.
+
+There is a nice computation graph for this process.
+
+[[./images/building_blocks.png]]
+
+** Forward and Backward Propagation 
+
+Forward like above.
+
+Backward: 
+$$dz^{[l]} = da^{[l]}*g^{[l]}\prime(z^{[l]})$$ 
+$$dW^{[l]} = dz^{[l]}a^{[l-1]T}$$
+$$db^{[l]} = dz^{[l]}$$
+$$da^{[l-1]} = W^{[l]T}dz^{[l]}$$
+
+Why is there a '*' in the first line? Hmm. Ah! It's element-wise multiplication!
+
+$$dZ^{[l]} = dA^{[l]} * g^{[l]}\prime(Z^{[l]})$$
+$$dW^{[l]} = \frac{1}{m} dZ^{[l]}A^{[l-1]T}$$
+$db^{[l]} = \frac{1}{m}$ ~np.sum(~ $dZ^{[l]}$ ~,axis=1, keepdims=True)~
+$$da^{[l-1]} = W^{[l]T}dz^{[l]}$$
+
+[[./images/building_blocks2.png]]
+
+** Hyperparameters and Parameters
+
+*** Parameters
+$W^{[1]},b^{[1]}, \dots$
+*** Hyperparameters
+- learning rate $\alpha$
+- #iterations
+- #hidden layers $L$
+- #hidden units $n^{[1]}, n^{[2]}, \dots$
+- Choice of activation function
+
+Later: Momentum, minibatch size, regularizations, $\dots$
+
+Applied Deep Learning is a very empirical process. You have to try out a lot of things and find out what works.
+
+** What does Deep Learning have to do with the Human Brain?
+
+Not a whole lot. It is unclear to what extend the human brain might implement something like backprop.
+
+** Notes from the Programming Exercise
+
+Remember that when we compute $W X + b$ in python, it carries out broadcasting. For example, if: 
+
+$$ W = \begin{bmatrix}
+    j  & k  & l\\
+    m  & n & o \\
+    p  & q & r 
+\end{bmatrix}\;\;\; X = \begin{bmatrix}
+    a  & b  & c\\
+    d  & e & f \\
+    g  & h & i 
+\end{bmatrix} \;\;\; b =\begin{bmatrix}
+    s  \\
+    t  \\
+    u
+\end{bmatrix}$$
+
+Then $WX + b$ will be:
+
+$$ WX + b = \begin{bmatrix}
+    (ja + kd + lg) + s  & (jb + ke + lh) + s  & (jc + kf + li)+ s\\
+    (ma + nd + og) + t & (mb + ne + oh) + t & (mc + nf + oi) + t\\
+    (pa + qd + rg) + u & (pb + qe + rh) + u & (pc + qf + ri)+ u \end{bmatrix}  $$
+
+[[./images/backprop_kiank.png]]

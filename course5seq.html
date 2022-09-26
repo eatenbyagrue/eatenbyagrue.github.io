@@ -1,0 +1,1167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-09-26 Mo 16:59 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes on Coursera, Deep Learning Specification, Sequence Models</title>
+<meta name="author" content="By Me" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Notes on Coursera, Deep Learning Specification, Sequence Models</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgc25fd5b">1. Week 1: Recurrent Neural Networks</a>
+<ul>
+<li><a href="#orgc4e17d6">1.1. Notation</a></li>
+<li><a href="#org6c94c39">1.2. Recurrent Neural Network Model</a></li>
+<li><a href="#org8154459">1.3. Backpropagation through time.</a></li>
+<li><a href="#orgfdeb95f">1.4. Different types of RNNs</a></li>
+<li><a href="#orgad1cf6a">1.5. Language model and sequence generation</a></li>
+<li><a href="#org121d0ff">1.6. Sample novel sequences</a></li>
+<li><a href="#org8212884">1.7. Vanishing Gradients and RNNs</a></li>
+<li><a href="#orgd71638b">1.8. Gated Recurrent Unit (GRU)</a></li>
+<li><a href="#orgf2daa4d">1.9. Long Short Term Memory (LSTM)</a></li>
+<li><a href="#orgf99521b">1.10. Bidirectional RNN</a></li>
+<li><a href="#org9244db9">1.11. Deep RNNs</a></li>
+</ul>
+</li>
+<li><a href="#org6314557">2. Week 2: Natural Language Processing &amp; Word Embeddings</a>
+<ul>
+<li><a href="#orgcfeb833">2.1. Word Representation</a></li>
+<li><a href="#orgb3de71a">2.2. Using word embeddings</a></li>
+<li><a href="#org4215800">2.3. Properties of word embeddings</a></li>
+<li><a href="#orgcc1e49e">2.4. Embedding Matrix</a></li>
+<li><a href="#orgeec362f">2.5. Learning word embeddings</a></li>
+<li><a href="#orge208608">2.6. Word2Vec</a>
+<ul>
+<li><a href="#org074ca08">2.6.1. Skip grams</a></li>
+<li><a href="#org2daa087">2.6.2. Model</a></li>
+</ul>
+</li>
+<li><a href="#org9b350ca">2.7. Negative Sampling</a></li>
+<li><a href="#orge082578">2.8. Glove word vectors</a></li>
+<li><a href="#org3c0c141">2.9. Sentiment classification</a></li>
+<li><a href="#org3df1a74">2.10. Debiasing word embeddings</a></li>
+</ul>
+</li>
+<li><a href="#org2fc4c80">3. Week 3 Sequence models &amp; Attention mechanism</a>
+<ul>
+<li><a href="#org96c7806">3.1. Basic models</a></li>
+<li><a href="#org3f42f04">3.2. Picking the most likely sentence</a></li>
+<li><a href="#org6a33d10">3.3. Beam Search</a></li>
+<li><a href="#org71fef2a">3.4. Refinements to Beam search</a></li>
+<li><a href="#org65f8db0">3.5. Error Analysis on Beam search</a></li>
+<li><a href="#org360ff2d">3.6. Bleu score</a></li>
+<li><a href="#org1d816d2">3.7. Attention model Intuition</a></li>
+<li><a href="#org316b46f">3.8. Attention model</a></li>
+<li><a href="#orgd6353ce">3.9. Speech Recognition</a></li>
+<li><a href="#org8504ddf">3.10. Trigger word detection</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgc25fd5b" class="outline-2">
+<h2 id="orgc25fd5b"><span class="section-number-2">1.</span> Week 1: Recurrent Neural Networks</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+RNNs transformed speech recognition, natural language processing etc. 
+</p>
+
+<p>
+RNNs can deal with sequential data, e.g. speech, text, music, dna sequence, etc. 
+</p>
+
+<p>
+common tasks: video activity recognition, sentiment classification, music generation&#x2026; 
+</p>
+
+<p>
+We look here mostly at supervised learning problems for sequential data and RNNs. 
+</p>
+</div>
+
+<div id="outline-container-orgc4e17d6" class="outline-3">
+<h3 id="orgc4e17d6"><span class="section-number-3">1.1.</span> Notation</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+x: Harry Pooter and Hermione Granger invented a new spell.
+</p>
+
+<p>
+x<sup>(i)</sup> : x<sup>&lt;1&gt;</sup>, x<sup>&lt;2&gt;</sup>, &hellip;, x<sup>&lt;t&gt;</sup>, &hellip;, x<sup>&lt;9&gt;</sup>
+</p>
+
+<p>
+\(T_x = 9\)
+</p>
+
+<p>
+task: where are the names in the sentence?
+</p>
+
+<p>
+y: 1 1 0 1 1 0 0 0 0 
+</p>
+
+<p>
+y<sup>&lt;i&gt;</sup>: y<sup>&lt;1&gt;</sup>, y<sup>&lt;2&gt;</sup>, &hellip;, y<sup>&lt;t&gt;</sup>, &hellip;, y<sup>&lt;9&gt;</sup>
+</p>
+
+<p>
+\(T_y = 9\)
+</p>
+
+<p>
+How to represent individual words? Get a vocabulary, or dictionary, say with a small 10k size. Reasonable common sizes are 30k-100k.
+</p>
+
+<p>
+Use one-hot representation for words (empty vectors except for the one at the index of the word it represents)
+</p>
+
+<p>
+What with unknown words? have a catch-all &rsquo;unknown&rsquo;.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6c94c39" class="outline-3">
+<h3 id="org6c94c39"><span class="section-number-3">1.2.</span> Recurrent Neural Network Model</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Why not just a standard network?
+</p>
+
+<p>
+Doesn&rsquo;t work too well:
+</p>
+
+<ul class="org-ul">
+<li>Inputs and outputs can be different lengths in different examples.</li>
+<li>It also doesn&rsquo;t share features learned across different positions in text (at least not a naive approach)</li>
+</ul>
+
+<p>
+The network &rsquo;remembers&rsquo; the previous inputs for any given input. Here, we use the unrolled type of diagram for RNNs. The initial input maybe gets a zero vector as context. The same parameters are used for every timestep. 
+</p>
+
+<p>
+Weakness: Here, only <i>earlier</i> timesteps are given as context. This can be problematic: Compare
+</p>
+
+<p>
+&rsquo;Teddy Roosevelt was a president&rsquo; vs. &rsquo;Teddy bears are on sale&rsquo;
+</p>
+
+<p>
+This will be addressed in a later video with &rsquo;bidirectional recurrent networks&rsquo;.
+</p>
+
+<p>
+\[a^{<0>} = 0\]
+\[a^{<1>} = g_1(W_{aa}a^{<0>} + W_{ax}x^{<1>} + b_a)\]
+The activation function usually is <code>tanh</code>.
+\[\hat{y}^{<1>} = g_2(W_{ya}a^{<1>} + b_y)\]
+This one&rsquo;s usually <code>sigmoid</code>.
+</p>
+
+<p>
+This can be simplified, tho.
+</p>
+
+<p>
+\[a^{< t>} = g(W_a [a^{< t-1>}, x^{<1>}] + b_a)\]
+</p>
+
+<p>
+Where \(W_a = [W_{aa} | W_{ax}]\) with dimensions \([m_aa \times n_aa | m_ax (=m_aa) \times n_ax] = m_aa \times n_aa + n_ax\), so they are basically just concatenated.
+</p>
+
+<p>
+A similar thing with: \([a^{< t-1>},x^{< t>}]\) are stacked <i>on top</i> of each other.
+</p>
+
+<p>
+We then also write 
+</p>
+
+<p>
+\[\hat{y}^{< t>} = g(W_y a^{< t>} + b_y)\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8154459" class="outline-3">
+<h3 id="org8154459"><span class="section-number-3">1.3.</span> Backpropagation through time.</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+The framework autmatically will take care of it. Here is a rough sense. 
+</p>
+
+<p>
+First, you need a loss function.
+</p>
+
+<p>
+\[\mathcal{L}^{< t>}(\hat{y}^{< t>},y^{< t>}) = -y^{< t>}\log\hat{y}^{< t>} - (1 - y^{< t>})\log(1-\hat{y}^{< t>})\]
+</p>
+
+<p>
+For all timesteps, we simply sum up the losses.
+</p>
+
+<p>
+Then we use &rsquo;backpropagation through time&rsquo;.
+</p>
+
+<p>
+So far, the input and output lengths are identical.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfdeb95f" class="outline-3">
+<h3 id="orgfdeb95f"><span class="section-number-3">1.4.</span> Different types of RNNs</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+You could also have different lengths, of course. We can modify RNNs to deal with this. Inspired by Karpathy - the unreasonable effectiveness of RNNs. 
+</p>
+
+
+<div id="org34aa0e0" class="figure">
+<p><img src="./diags.jpeg" alt="diags.jpeg" />
+</p>
+</div>
+
+<p>
+T<sub>x</sub> + T<sub>y</sub>: Many-to-many 
+</p>
+
+<p>
+Sentiment classification: x is text, y is 0/1. Many-to-one.
+</p>
+
+<p>
+Music generation: One-to-many. (possibly)
+</p>
+
+<p>
+Machine translation: Many-to-many (different T<sub>x</sub>, T<sub>y</sub>).
+</p>
+
+<p>
+One-to-One: don&rsquo;t need RNN for this.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgad1cf6a" class="outline-3">
+<h3 id="orgad1cf6a"><span class="section-number-3">1.5.</span> Language model and sequence generation</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+What is language modelling? In speech recognition:
+</p>
+
+<p>
+The apple and pair salad vs. The apple and pear salad 
+</p>
+
+<p>
+The language model assigns prior probabilities to all sentences, s.t. the second one would be much more likely.
+</p>
+
+<p>
+Estimate \(P(y^{<1>}, \dots, y^{< T_y>})\).
+</p>
+
+<p>
+Training set: large corpus of english text. 
+</p>
+
+<ul class="org-ul">
+<li>Tokenize sentences into words (maybe add &lt;EOS&gt;).</li>
+<li>Replace unknown words with &lt;UNK&gt;</li>
+</ul>
+
+<p>
+So how to feed the network with it?
+</p>
+
+<p>
+First input is 0 vector, the output then basically is a probability distribution of any word (that the model learned). The second input is the first word of the sentence, the output is probability of any word given the first word, and so on. 
+</p>
+
+<p>
+So, for example, the model can tell you a joint probability distribution via the chain rule (it can compute the right hand side). (At least in theory, there are vanishing gradient problems etc, let&rsquo;s talk later)
+</p>
+
+<p>
+\(P(y^{<1>},y^{<2>},y^{<3>}) = P(y^{<1>})P(y^{<2>}|y^{<1>})P(y^{<3>}|y^{<2>},y^{<1>})\)
+</p>
+
+<p>
+We can also sample sequences from the model!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org121d0ff" class="outline-3">
+<h3 id="org121d0ff"><span class="section-number-3">1.6.</span> Sample novel sequences</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+It&rsquo;s just like you&rsquo;d think: You sample from the distribution the model generates given 0-input. Then pass the sampled word as the input in the second time step, and repeat. Concatenate and be happy!
+</p>
+
+<p>
+This is a word-level RNN. It&rsquo;s also possible to do a character-level RNN, of course. 
+</p>
+
+<p>
+Main disadvantage is that the sequences are much longer. So it&rsquo;s harder to capture long range dependencies and are more computationally more expensive to train.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8212884" class="outline-3">
+<h3 id="org8212884"><span class="section-number-3">1.7.</span> Vanishing Gradients and RNNs</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+The cat, which already ate &#x2026;, was full.
+</p>
+
+<p>
+The cats, &#x2026; , were full.
+</p>
+
+<p>
+Contexts can be very long!
+</p>
+
+<p>
+Remember the vanishing gradient problem for deep feedforward networks. Very difficult for the error to backpropagate further back. This also applies to &rsquo;deep&rsquo; RNNs with long contexts! a 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd71638b" class="outline-3">
+<h3 id="orgd71638b"><span class="section-number-3">1.8.</span> Gated Recurrent Unit (GRU)</h3>
+<div class="outline-text-3" id="text-1-8">
+<p>
+New variable: \(c\) = memory cell
+</p>
+
+<p>
+\(c^{< t>} = a^{< t>}\) (different for LSTM later)
+</p>
+
+<p>
+\(c^{\prime< t>} = \tanh(W_c[c^{< t-1>},x^{< t>}], + b_c)\)
+</p>
+
+<p>
+We introduce a <i>gate</i>.
+</p>
+
+<p>
+\(\Gamma_u = \sigma(W_u[c^{< t-1>}, x^{< t>}] + b_u)\)
+</p>
+
+<p>
+The gate decides whether or not we update. For example, a good time to update is when the subject of the sentence appears.
+</p>
+
+<p>
+\(c^{< t>} = \Gamma_u * c^{\prime< t>} + (1 - \Gamma_u) * c^{\prime< t - 1>}\).
+</p>
+
+<p>
+So if the gate value is 1, update, if not, don&rsquo;t, use previous. 
+</p>
+
+<p>
+Pictures often used to explain this, Andrew prefers the formulas.
+</p>
+
+<p>
+This addresses the vanishing gradient problem, since it&rsquo;s easy to just pass through the previous layer&rsquo;s activation (that&rsquo;s what I&rsquo;m getting from this at least).
+</p>
+
+<p>
+In effect, you have an additional set of parameters that acts as a gate for updates.
+</p>
+
+<p>
+This is a simplified version of GRUs. Normally, you have an additional gate \(\Gamma_r\) that yields better results. 
+</p>
+
+<p>
+Also, there are LSTMs we talk about in the next video.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf2daa4d" class="outline-3">
+<h3 id="orgf2daa4d"><span class="section-number-3">1.9.</span> Long Short Term Memory (LSTM)</h3>
+<div class="outline-text-3" id="text-1-9">
+<p>
+Best idea ever!! The paper is difficult to read, though. 
+</p>
+
+<p>
+u stands for update, f for forget, o for output. You have three gates in the LSTM.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">GRU</th>
+<th scope="col" class="org-left">LSTM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">\(c^{\prime< t>} = \tanh(W_c[c^{< t-1>},x^{< t>}], + b_c)\)</td>
+<td class="org-left">\(c^{\prime< t>} = \tanh(W_c[a^{< t-1>},x^{< t>}], + b_c)\)</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\Gamma_u = \sigma(W_u[c^{< t-1>}, x^{< t>}] + b_u)\)</td>
+<td class="org-left">\(\Gamma_u = \sigma(W_u[a^{< t-1>}, x^{< t>}] + b_u)\)</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\Gamma_r = \sigma(W_r[c^{< t-1>}, x^{< t>}] + b_r)\)</td>
+<td class="org-left">\(\Gamma_f = \sigma(W_f[a^{< t-1>}, x^{< t>}] + b_f)\)</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">\(\Gamma_o = \sigma(W_o[a^{< t-1>}, x^{< t>}] + b_o)\)</td>
+</tr>
+
+<tr>
+<td class="org-left">\(c^{< t>} = \Gamma_u * c^{\prime< t>} + (1 - \Gamma_u) * c^{\prime< t - 1>}\)</td>
+<td class="org-left">\(c^{< t>} = \Gamma_u * c^{\prime< t>} + \Gamma_f * c^{\prime< t - 1>}\)</td>
+</tr>
+
+<tr>
+<td class="org-left">\(c^{< t>} = a^{< t>}\)</td>
+<td class="org-left">\(a^{< t>} = \Gamma_o \tanh(c^{< t>})\)</td>
+</tr>
+</tbody>
+</table>
+
+
+<div id="org4e45a39" class="figure">
+<p><img src="./lstm.png" alt="lstm.png" width="800px" />
+</p>
+</div>
+
+<p>
+Key things here: The upper line goes through so it&rsquo;s easy to just pass through without much interference. So it&rsquo;s easy for the network to pass through earlier layer&rsquo;s output. In other words, easy to learn the identity function for earlier input, so helps with vanishing gradient problem in some way.
+</p>
+
+<p>
+So, when to use what? GRUs are actually relatively recent. Advantage of GRUs is that it&rsquo;s simpler and easier to build and runs faster.
+</p>
+
+<p>
+But LSTM is the default industry choice. GRUs often work just as well.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf99521b" class="outline-3">
+<h3 id="orgf99521b"><span class="section-number-3">1.10.</span> Bidirectional RNN</h3>
+<div class="outline-text-3" id="text-1-10">
+<p>
+BRNN let you take infos from both the past and the present! So far, we looked at uni directional or forward RNNs.
+</p>
+
+<p>
+So, additionally we have a backwards connection. 
+</p>
+
+<p>
+This is still an acyclic graph. Frist you calculate all forward activations and all backward activations. With both, you can calculate the outputs for each time step.
+</p>
+
+<p>
+BRNN with LSTM is often used. Disadvantage: You need the whole sentence for this to work. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9244db9" class="outline-3">
+<h3 id="org9244db9"><span class="section-number-3">1.11.</span> Deep RNNs</h3>
+<div class="outline-text-3" id="text-1-11">
+<p>
+Stack multiple layers on top of each other for deep RNNs. 
+</p>
+
+<p>
+Just as you&rsquo;d think Activations are now layer-indexed:
+</p>
+
+<p>
+\(a^{[1]<0>}, a^{[2]<0>}, a^{[3]<0>}\) etc. 
+</p>
+
+<p>
+Activation \(a^{[l]< t>}\) is fed into \(a^{[l]< t+1>}\).
+</p>
+
+<p>
+Three layers is already quite deep! Through the time dependency the models get expensive fast. How expensive, exactly? Dunno.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org6314557" class="outline-2">
+<h2 id="org6314557"><span class="section-number-2">2.</span> Week 2: Natural Language Processing &amp; Word Embeddings</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgcfeb833" class="outline-3">
+<h3 id="orgcfeb833"><span class="section-number-3">2.1.</span> Word Representation</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Word Embeddings are ways of represent words such that you can use analogies (Man/Woman/King/Queen). 
+</p>
+
+<p>
+So far, we used 1-hot representations from a vocabulary. The learning algorithm can&rsquo;t easily generalize from
+</p>
+
+<p>
+&rsquo; In want a glass of orange <i>juice</i> &rsquo; to infer .I want a glass of apple <i>juice</i>&rsquo;.
+</p>
+
+<p>
+The dot product of the one-hot vectors is zero!
+</p>
+
+<p>
+How about a featurized representation? Example:
+</p>
+
+<p>
+(of course Andrew does not explain what the numbers are supposed to indicate in a general way. Just a direct answer to the question &rsquo;How Food is a Man?&rsquo; 0.02! Does or doesn&rsquo;t connote much about&#x2026; ) But this is very standard in the industry so there&rsquo;s probably much thought about this. Interesting!
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-right">Man</td>
+<td class="org-right">Woman</td>
+<td class="org-right">King</td>
+<td class="org-right">Queen</td>
+<td class="org-right">Apple</td>
+<td class="org-right">Orange</td>
+</tr>
+
+<tr>
+<td class="org-left">Gender</td>
+<td class="org-right">-1</td>
+<td class="org-right">1</td>
+<td class="org-right">-0.95</td>
+<td class="org-right">0.97</td>
+<td class="org-right">0</td>
+<td class="org-right">0.01</td>
+</tr>
+
+<tr>
+<td class="org-left">Food</td>
+<td class="org-right">0.02</td>
+<td class="org-right">0.01</td>
+<td class="org-right">0</td>
+<td class="org-right">0</td>
+<td class="org-right">0.97</td>
+<td class="org-right">0.98</td>
+</tr>
+
+<tr>
+<td class="org-left">Age</td>
+<td class="org-right">0.03</td>
+<td class="org-right">0.03</td>
+<td class="org-right">0.7</td>
+<td class="org-right">0.69</td>
+<td class="org-right">0.03</td>
+<td class="org-right">0.02</td>
+</tr>
+
+<tr>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+<td class="org-right">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+You can imagine coming up with say 300 different features so you have a 300 dim vector for representing a Man. (?) 
+</p>
+
+<p>
+The featurised representation allows for similarity judgments.
+</p>
+
+<p>
+This is one of the most important inventions in natural language processing. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb3de71a" class="outline-3">
+<h3 id="orgb3de71a"><span class="section-number-3">2.2.</span> Using word embeddings</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+How to learn the embeddings? We&rsquo;ll deal with that later.
+</p>
+
+<p>
+How to use the embeddings effectively? 
+</p>
+
+<ul class="org-ul">
+<li><code>Sally Johnson is an orange farmer.</code></li>
+<li><code>Robert Lin is a durian cultivator.</code></li>
+</ul>
+
+<p>
+Say we do NER. If we have word embeddings already, we can infer in the second sentence that durian cultivator is similar to orange farmer, and hence that robert lin is also a name, just as sally johnson. 
+</p>
+
+<p>
+Steps
+</p>
+
+<ol class="org-ol">
+<li>Learn word embeddings from large text corpus (1-100B words) or download pre-trained embedding</li>
+<li>Transfer embedding to new task with SMALLER training set</li>
+<li>Optionally continue to finetune word embeddings.</li>
+</ol>
+
+<p>
+Very useful for many NLP tasks, e.g. NER, text summarization, parsing etc., less useful for language modelling, machine translation (for the latter you normally have large datasets already).
+</p>
+
+<p>
+It&rsquo;s a type of transfer learning.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4215800" class="outline-3">
+<h3 id="org4215800"><span class="section-number-3">2.3.</span> Properties of word embeddings</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Fascinating: can help with reasoning by analogy. Convey a sense of what these embeddings to.
+</p>
+
+<p>
+Let&rsquo;s say we pose the question
+</p>
+
+<p>
+Man is to woman as King is to <span class="underline">_</span>? Queen, of course. Say the embedding vectors are
+</p>
+
+<p>
+\(e_{man}, e_{woman}\). \(e_{man} - e_{woman} ~ e_{king} - e_{?}\). So find word such that the equation holds. Paper from 2013: Mikolov et al (2013) linguistic regularities.
+</p>
+
+<p>
+find word such that: $argmax<sub>w</sub> sim(e<sub>w,e</sub><sub>king</sub>-e<sub>man</sub>+e<sub>woman</sub>).$
+</p>
+
+<p>
+Remarkably, this actually works. For the similarity, most often, you&rsquo;d use cosine similarity.
+</p>
+
+<p>
+\[sim(u,v) = \frac{u^Tv}{||u||_2||v||_2}\]
+</p>
+
+<p>
+Alternatively, you can use euclidean distance as a /dis/similarity measure, too.
+</p>
+
+<p>
+Ottawa:Canada as Nairobi:Kenya
+Big:Bigger as Tall:taller
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcc1e49e" class="outline-3">
+<h3 id="orgcc1e49e"><span class="section-number-3">2.4.</span> Embedding Matrix</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+10,000 word vocabulary (let&rsquo;s say). Let&rsquo;s learn an embedding matrix \(E\) with dimensions 300 &times; 10,000 with 300 features and one column per word. If you multiply \(E\) by a one-hot vector representation (let&rsquo;s say of orange) you would exactly get the 300-dim vector containing the feature values. 
+</p>
+
+<p>
+\(Eo_{j} = e_{j}\) = embedding for word j.
+</p>
+
+<p>
+This is actually not very efficient. Use a specialized function just extracting the column of \(E\). But mathematically it&rsquo;s neat to write.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgeec362f" class="outline-3">
+<h3 id="orgeec362f"><span class="section-number-3">2.5.</span> Learning word embeddings</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Historically, the algorithms became <i>simpler</i>. Confusingly, these still work super duper. We&rsquo;ll start with a mediumly complicated algorithm to build up intuitions.
+</p>
+
+<p>
+Building a neural language model is a reasonable way to predict the next word in the sequence. (Bengio et al 2003 - neural probabilistic model)
+</p>
+
+<p>
+Guess what! the embedding matrix can be parameters of a weight matrix. For example, you have a fixed historical window and want to predict the next word. Then use the E matrix as weights for each word. Use backprop &amp; gradient descent to learn to predict the next word.
+</p>
+
+<p>
+Simpler?
+</p>
+
+<p>
+How to choose the context? For example, 4 words on the left, 4 words on the right, both, etc. Nearby 1 word (more on this later, skip gram model).
+</p>
+
+<p>
+research shows: if you really build a language model (i.e., predict the next word): use previous words. Goal is learn word embedding: able to use many different contexts.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge208608" class="outline-3">
+<h3 id="orge208608"><span class="section-number-3">2.6.</span> Word2Vec</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+(Mikolov et al 2013 again). 
+</p>
+</div>
+
+<div id="outline-container-org074ca08" class="outline-4">
+<h4 id="org074ca08"><span class="section-number-4">2.6.1.</span> Skip grams</h4>
+<div class="outline-text-4" id="text-2-6-1">
+<p>
+&rsquo;I want a glass of orange juice to go along with my cereal.&rsquo;
+</p>
+
+<p>
+Randomly choose a context word, an then randomly choose target words. E.g. choose orange, then targets &rsquo;juice&rsquo;, &rsquo;cereal&rsquo;, &rsquo;my&rsquo; etc.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2daa087" class="outline-4">
+<h4 id="org2daa087"><span class="section-number-4">2.6.2.</span> Model</h4>
+<div class="outline-text-4" id="text-2-6-2">
+<p>
+Vocab size 10k. Learn:
+</p>
+
+<p>
+context \(c\) &rarr; target \(t\)
+</p>
+
+<p>
+\(o_c \rightarrow E \rightarrow e_c \rightarrow o_{softmax} \rightarrw \hat{y}\)
+</p>
+
+<p>
+\[p(t|c) = \frac{e^{\theta_t^Te_c}{\sum_j e^{\theta_j^Te_c}\]
+</p>
+
+<p>
+Simple log loss function. 
+</p>
+
+<p>
+So \(E\) has lots of parameters and \(\theta\). 
+</p>
+
+<p>
+Turns out, there are problems! computationally expensive. The softmax classification costs a lot to compute. You can use a hierarchical softmax classifier with cost \(\log|v|\). Not quite clear how exactly this helps, but it does apparently.
+</p>
+
+<p>
+A different even simpler method is negative sampling.
+</p>
+
+<p>
+How do we sample the context c? You don&rsquo;t really want to get stopwords like the, of, a, &#x2026;. Instead, balance out sampling to consider less common words. 
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9b350ca" class="outline-3">
+<h3 id="org9b350ca"><span class="section-number-3">2.7.</span> Negative Sampling</h3>
+<div class="outline-text-3" id="text-2-7">
+<p>
+From the Mikolov paper again.
+</p>
+
+<p>
+In principle, we are changing the softmax classifier to just a few binary classifier for chosen words. One positive case, and some negatives. It&rsquo;s not very exciting.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge082578" class="outline-3">
+<h3 id="orge082578"><span class="section-number-3">2.8.</span> Glove word vectors</h3>
+<div class="outline-text-3" id="text-2-8">
+<p>
+Glove = global vectors for word representation. 
+</p>
+
+<p>
+Let \(x_{i,j}\) = number of times word i (t) appears in context of j (c) (or the other way round). Say +- 10 words. 
+</p>
+
+<p>
+minimize $&sum;<sub>ij</sub> f(X<sub>ij</sub>) (&Theta;<sub>i</sub><sup>Te</sup><sub>j</sub> + b<sub>i</sub> + b<sub>j</sub> - log X<sub>ij</sub>)<sup>2</sup>
+</p>
+
+<p>
+\(f\) is a weighting function relating to the frequency of words.
+</p>
+
+<p>
+Huh? how can a simple algorithm like this really work? Well, it does, so. 
+</p>
+
+<p>
+We started off with this featurization view. But you cannot guarantee that the learned features are actually interpretable. Some linear algebra &rsquo;proof&rsquo; for it given, but so unclean it&rsquo;s not interpretable.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3c0c141" class="outline-3">
+<h3 id="org3c0c141"><span class="section-number-3">2.9.</span> Sentiment classification</h3>
+<div class="outline-text-3" id="text-2-9">
+<p>
+Challenge: not a huge training set. Good to use embedding, ey! 
+</p>
+
+<p>
+&rsquo;the dessert is excellent!&rsquo;
+</p>
+
+<p>
+Standard word embedding modell can deal with this. But!
+</p>
+
+<p>
+&rsquo;Completely lacking in good taste, good food, good ambience&rsquo; is harder. 
+</p>
+
+<p>
+Try a embedding into RNN model instead, where the last word in the sentence outputs the sentiment. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3df1a74" class="outline-3">
+<h3 id="org3df1a74"><span class="section-number-3">2.10.</span> Debiasing word embeddings</h3>
+<div class="outline-text-3" id="text-2-10">
+<p>
+Bias as in gender, ethnicity etc bias. 
+</p>
+
+<p>
+Problem: Man:computer<sub>programmer</sub> as woman:homemaker. Enforces unhealthy stereotypes. 
+</p>
+
+<p>
+Word embeddings reflect biases in texts used to train the model.
+</p>
+
+<p>
+How to address these biases?
+</p>
+
+<ol class="org-ol">
+<li>Identify bias direction. $average(e<sub>he</sub> - e<sub>she</sub>, e<sub>male</sub> - e<sub>female</sub>, &#x2026;$  gives the gender bias direction. Usually we use Singular value decomp instead of average.</li>
+<li>Neutralize: for every word not definitional, project to get rid of bias. Words like grandmother, -father are intrinsically gendered (gender is part of definition), but let&rsquo;s say jobs which shouldn&rsquo;t be gendered. Project to (orthogonal from bias) non-bias direction.</li>
+<li>Equalize pairs. Make sure that grandmother / grandfather are equidistant from non-bias direction.</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2fc4c80" class="outline-2">
+<h2 id="org2fc4c80"><span class="section-number-2">3.</span> Week 3 Sequence models &amp; Attention mechanism</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org96c7806" class="outline-3">
+<h3 id="org96c7806"><span class="section-number-3">3.1.</span> Basic models</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Sequence to sequence model: for e.g. translation. One possibility is an encoder/decoder structure. Also works for image captioning with a conv net as encoder. Then attach a variable length RNN as the decoder.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3f42f04" class="outline-3">
+<h3 id="org3f42f04"><span class="section-number-3">3.2.</span> Picking the most likely sentence</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Build a <i>conditional language model</i>. Decoder network is pretty much the language model from before. Machine translation adds an encoder network. You want to maximize then joint probability of the translation given the original sentence, so to maximize \(P(y^{<1>},y^{<2>},\dots,y^{<T_y>}|x)\). This is an algorithmic search problem (since the first word gets fed as input to the next timestep etc.)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6a33d10" class="outline-3">
+<h3 id="org6a33d10"><span class="section-number-3">3.3.</span> Beam Search</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Has an integer parameter \(B\) for the beam width.
+</p>
+
+<ol class="org-ol">
+<li>select \(B\) highest probability words \(P(y^{<1>}|x)\) on slot 1 of the sentence.</li>
+<li>For all \(B\) highest probability words, feed it to the next timestep, and take the \(B\) highest \(P(y^{<1>},y^{<3>}|x) = P(y^{<1>}|x)P(y^{<2>}|x,y^{<1>})\)</li>
+<li>Proceed analogously to the end.</li>
+</ol>
+
+<p>
+if you set \(B=1\), you get greedy search.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org71fef2a" class="outline-3">
+<h3 id="org71fef2a"><span class="section-number-3">3.4.</span> Refinements to Beam search</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Beam search maximizes
+</p>
+
+<p>
+\[argmax_y \prod^{T_y}_{t=1}P(y^{< t>}|x,y^{<1>},\dots,y^{< t-1>})\]
+</p>
+
+<p>
+Because of floating point operations we do logs instead.
+</p>
+
+<p>
+\[\frac{1}{T_y^\alpha} argmax_y \sum_{t=1}^{T_y}\log P(y^{< t>}|x,y^{<1>},\dots,y^{< t-1>})\]
+</p>
+
+<p>
+Problem: favors very short translation b/c of small numbers multiplying (in the product case, similar in log case). So let&rsquo;s take the average instead, where &alpha; is a hyperparameter.
+</p>
+
+<p>
+Choose B?
+</p>
+
+<p>
+The larger B, the better the results but the more computationally expensive. 10 to 100 is considered large. But 1000 to 3000 not unheard of!
+</p>
+
+<p>
+Beam search is faster than Breadth first or Depth first but not guaranteed to find maximum posterior probability. &rarr; heuristic.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org65f8db0" class="outline-3">
+<h3 id="org65f8db0"><span class="section-number-3">3.5.</span> Error Analysis on Beam search</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+Take two candidate translation sentences \(y^*, \hat{y}\), where \(y*\) is the human chosen best translation and \(\hat{y}\) is the output of Beam search. Use the RNN to calculate \(P(y^*|x)\) and \(P(\hat{y}|x)\). 
+</p>
+
+<p>
+If \(P(y^*|x)\) &gt; \(P(\hat{y}|x)\) then Beam search is at fault, since it chose \(\hat{y}\).
+</p>
+
+<p>
+If \(P(y^*|x)\) &lt; \(P(\hat{y}|x)\) then RNN model is at fault. 
+</p>
+
+<p>
+If the Beam search if at fault often, then maybe increase beam size. If the RNN is at fault, maybe use a deeper RNN.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org360ff2d" class="outline-3">
+<h3 id="org360ff2d"><span class="section-number-3">3.6.</span> Bleu score</h3>
+<div class="outline-text-3" id="text-3-6">
+<p>
+What if there are many good solutions? use Bleu score (bilingual evaluation understudy). 
+</p>
+
+<p>
+\(p_n\) = Bleu score on n-grams only.
+\(BP\) = brevity penalty, penalized shorter translations.
+</p>
+
+<p>
+\[BP \exp(\frac{1}{4}\sum_{n=1}^4 p_n)\]
+</p>
+
+<p>
+\[p_n = \frac{\sum_{n-grams \in \hat{y}} Count_{clip}(n-gram)}{\sum_{n-grams \in \hat{y}} Count(n-gram)}\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1d816d2" class="outline-3">
+<h3 id="org1d816d2"><span class="section-number-3">3.7.</span> Attention model Intuition</h3>
+<div class="outline-text-3" id="text-3-7">
+<p>
+Attention models help deal with long sentences which are quite annoyingly difficult. Let&rsquo;s look only at part of the sentence at a time to increase translations scores.
+</p>
+
+<p>
+Jane visite l&rsquo;Afrique en septembre. Use a bidirectional RNN. Have additional weights \(\alpha^{<i,j>}\) that determine the context effectiveness, i.e. how much the <i>ith</i> english word is affected by the <i>jth</i> french word (when translating french to english.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org316b46f" class="outline-3">
+<h3 id="org316b46f"><span class="section-number-3">3.8.</span> Attention model</h3>
+<div class="outline-text-3" id="text-3-8">
+<p>
+Bidirectional Gru or Lstm. Over that, a forward direction RNN. The attention weights determine the influence of each timestep of the bidirectional RNN.
+</p>
+
+<p>
+\(\alpha^{< t,t'>}\) = amount of &rsquo;attention&rsquo; \(y^{< t>}\) should pay to \(a^{< t'>}\).
+</p>
+
+<p>
+\(a^{< t>} = (\vec{a}^{< t>}, \overleftarrow{a}^{< t>})\)
+</p>
+
+<p>
+\(c^{<1>} = \sum_{t'} \alpha^{<1,t'>}a^{< t'>}\)
+</p>
+
+<p>
+Compute a basically by using a softmax over \(e^{< t,t'>}\). The \(e\)&rsquo;s are learned through a mini neural net with inputs \(s^{< t-1>}\) and \(a^{< t'>}\) using backprop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd6353ce" class="outline-3">
+<h3 id="orgd6353ce"><span class="section-number-3">3.9.</span> Speech Recognition</h3>
+<div class="outline-text-3" id="text-3-9">
+<p>
+Problem: audio clip \(x\) &rarr; transcript \(y\).
+</p>
+
+<p>
+First step usually to run a spectogram over the audio data. Back in the day, people used phonemes. Attention models work well for this.
+</p>
+
+<p>
+CTC: Connectionist temporal classification cost for speech recognition. Usually, the number of input timesteps is prohibitively large (easily &gt; 1000). What should the output look like? For example, &ldquo;ttt<sub>h</sub><sub>eee</sub>__<sub>SPACE</sub>__<sub>qqq</sub>__&rdquo; is the generated output, then collapse into &ldquo;the q&rdquo;
+</p>
+
+<p>
+Simpler: just trigger word detection.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8504ddf" class="outline-3">
+<h3 id="org8504ddf"><span class="section-number-3">3.10.</span> Trigger word detection</h3>
+<div class="outline-text-3" id="text-3-10">
+<p>
+Needed for amazon echo (<i>alexa</i>) etc. No wide consensus yet for what&rsquo;s the best algorithm.
+</p>
+
+<p>
+Model: set all y&rsquo;s to 1 whenever there is a trigger word said, 0 otherwise.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: By Me</p>
+<p class="date">Created: 2022-09-26 Mo 16:59</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,479 @@
+#+TITLE: Notes on Coursera, Deep Learning Specification, Sequence Models
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+
+
+* Week 1: Recurrent Neural Networks
+
+RNNs transformed speech recognition, natural language processing etc. 
+
+RNNs can deal with sequential data, e.g. speech, text, music, dna sequence, etc. 
+
+common tasks: video activity recognition, sentiment classification, music generation... 
+
+We look here mostly at supervised learning problems for sequential data and RNNs. 
+
+** Notation
+
+x: Harry Pooter and Hermione Granger invented a new spell.
+
+x^{(i)} : x^{<1>}, x^{<2>}, \dots, x^{<t>}, \dots, x^{<9>}
+
+$T_x = 9$
+
+task: where are the names in the sentence?
+
+y: 1 1 0 1 1 0 0 0 0 
+
+y^{<i>}: y^{<1>}, y^{<2>}, \dots, y^{<t>}, \dots, y^{<9>}
+
+$T_y = 9$
+
+How to represent individual words? Get a vocabulary, or dictionary, say with a small 10k size. Reasonable common sizes are 30k-100k.
+
+Use one-hot representation for words (empty vectors except for the one at the index of the word it represents)
+
+What with unknown words? have a catch-all 'unknown'.
+
+** Recurrent Neural Network Model
+
+Why not just a standard network?
+
+Doesn't work too well:
+
+- Inputs and outputs can be different lengths in different examples. 
+- It also doesn't share features learned across different positions in text (at least not a naive approach)
+
+The network 'remembers' the previous inputs for any given input. Here, we use the unrolled type of diagram for RNNs. The initial input maybe gets a zero vector as context. The same parameters are used for every timestep. 
+
+Weakness: Here, only /earlier/ timesteps are given as context. This can be problematic: Compare
+
+'Teddy Roosevelt was a president' vs. 'Teddy bears are on sale'
+
+This will be addressed in a later video with 'bidirectional recurrent networks'.
+
+$$a^{<0>} = 0$$
+$$a^{<1>} = g_1(W_{aa}a^{<0>} + W_{ax}x^{<1>} + b_a)$$
+The activation function usually is ~tanh~.
+$$\hat{y}^{<1>} = g_2(W_{ya}a^{<1>} + b_y)$$
+This one's usually ~sigmoid~.
+
+This can be simplified, tho.
+
+$$a^{< t>} = g(W_a [a^{< t-1>}, x^{<1>}] + b_a)$$
+
+Where $W_a = [W_{aa} | W_{ax}]$ with dimensions $[m_aa \times n_aa | m_ax (=m_aa) \times n_ax] = m_aa \times n_aa + n_ax$, so they are basically just concatenated.
+
+A similar thing with: $[a^{< t-1>},x^{< t>}]$ are stacked /on top/ of each other.
+
+We then also write 
+
+\[\hat{y}^{< t>} = g(W_y a^{< t>} + b_y)\]
+
+** Backpropagation through time.
+
+The framework autmatically will take care of it. Here is a rough sense. 
+
+First, you need a loss function.
+
+$$\mathcal{L}^{< t>}(\hat{y}^{< t>},y^{< t>}) = -y^{< t>}\log\hat{y}^{< t>} - (1 - y^{< t>})\log(1-\hat{y}^{< t>})$$
+
+For all timesteps, we simply sum up the losses.
+
+Then we use 'backpropagation through time'.
+
+So far, the input and output lengths are identical.
+
+** Different types of RNNs
+
+You could also have different lengths, of course. We can modify RNNs to deal with this. Inspired by Karpathy - the unreasonable effectiveness of RNNs. 
+
+[[./diags.jpeg]]
+
+T_x + T_y: Many-to-many 
+
+Sentiment classification: x is text, y is 0/1. Many-to-one.
+
+Music generation: One-to-many. (possibly)
+
+Machine translation: Many-to-many (different T_x, T_y).
+
+One-to-One: don't need RNN for this.
+
+** Language model and sequence generation
+
+What is language modelling? In speech recognition:
+
+The apple and pair salad vs. The apple and pear salad 
+
+The language model assigns prior probabilities to all sentences, s.t. the second one would be much more likely.
+
+Estimate $P(y^{<1>}, \dots, y^{< T_y>})$.
+
+Training set: large corpus of english text. 
+
+- Tokenize sentences into words (maybe add <EOS>).
+- Replace unknown words with <UNK>
+
+So how to feed the network with it?
+
+First input is 0 vector, the output then basically is a probability distribution of any word (that the model learned). The second input is the first word of the sentence, the output is probability of any word given the first word, and so on. 
+
+So, for example, the model can tell you a joint probability distribution via the chain rule (it can compute the right hand side). (At least in theory, there are vanishing gradient problems etc, let's talk later)
+
+$P(y^{<1>},y^{<2>},y^{<3>}) = P(y^{<1>})P(y^{<2>}|y^{<1>})P(y^{<3>}|y^{<2>},y^{<1>})$
+
+We can also sample sequences from the model!
+
+** Sample novel sequences
+
+It's just like you'd think: You sample from the distribution the model generates given 0-input. Then pass the sampled word as the input in the second time step, and repeat. Concatenate and be happy!
+
+This is a word-level RNN. It's also possible to do a character-level RNN, of course. 
+
+Main disadvantage is that the sequences are much longer. So it's harder to capture long range dependencies and are more computationally more expensive to train.
+
+** Vanishing Gradients and RNNs
+
+The cat, which already ate ..., was full.
+
+The cats, ... , were full.
+
+Contexts can be very long!
+
+Remember the vanishing gradient problem for deep feedforward networks. Very difficult for the error to backpropagate further back. This also applies to 'deep' RNNs with long contexts! a 
+
+** Gated Recurrent Unit (GRU)
+
+New variable: $c$ = memory cell
+
+$c^{< t>} = a^{< t>}$ (different for LSTM later)
+
+$c^{\prime< t>} = \tanh(W_c[c^{< t-1>},x^{< t>}], + b_c)$
+
+We introduce a /gate/.
+
+$\Gamma_u = \sigma(W_u[c^{< t-1>}, x^{< t>}] + b_u)$
+
+The gate decides whether or not we update. For example, a good time to update is when the subject of the sentence appears.
+
+$c^{< t>} = \Gamma_u * c^{\prime< t>} + (1 - \Gamma_u) * c^{\prime< t - 1>}$.
+
+So if the gate value is 1, update, if not, don't, use previous. 
+
+Pictures often used to explain this, Andrew prefers the formulas.
+
+This addresses the vanishing gradient problem, since it's easy to just pass through the previous layer's activation (that's what I'm getting from this at least).
+
+In effect, you have an additional set of parameters that acts as a gate for updates.
+
+This is a simplified version of GRUs. Normally, you have an additional gate $\Gamma_r$ that yields better results. 
+
+Also, there are LSTMs we talk about in the next video.
+
+** Long Short Term Memory (LSTM)
+
+Best idea ever!! The paper is difficult to read, though. 
+
+u stands for update, f for forget, o for output. You have three gates in the LSTM.
+
+| GRU                                                                          | LSTM                                                                   |
+|------------------------------------------------------------------------------+------------------------------------------------------------------------|
+| $c^{\prime< t>} = \tanh(W_c[c^{< t-1>},x^{< t>}], + b_c)$                    | $c^{\prime< t>} = \tanh(W_c[a^{< t-1>},x^{< t>}], + b_c)$              |
+| $\Gamma_u = \sigma(W_u[c^{< t-1>}, x^{< t>}] + b_u)$                         | $\Gamma_u = \sigma(W_u[a^{< t-1>}, x^{< t>}] + b_u)$                   |
+| $\Gamma_r = \sigma(W_r[c^{< t-1>}, x^{< t>}] + b_r)$                         | $\Gamma_f = \sigma(W_f[a^{< t-1>}, x^{< t>}] + b_f)$                   |
+|                                                                              | $\Gamma_o = \sigma(W_o[a^{< t-1>}, x^{< t>}] + b_o)$                   |
+| $c^{< t>} = \Gamma_u * c^{\prime< t>} + (1 - \Gamma_u) * c^{\prime< t - 1>}$ | $c^{< t>} = \Gamma_u * c^{\prime< t>} + \Gamma_f * c^{\prime< t - 1>}$ |
+| $c^{< t>} = a^{< t>}$                                                        | $a^{< t>} = \Gamma_o \tanh(c^{< t>})$                                |
+
+#+attr_html: :width 800px
+[[./lstm.png]]
+
+Key things here: The upper line goes through so it's easy to just pass through without much interference. So it's easy for the network to pass through earlier layer's output. In other words, easy to learn the identity function for earlier input, so helps with vanishing gradient problem in some way.
+
+So, when to use what? GRUs are actually relatively recent. Advantage of GRUs is that it's simpler and easier to build and runs faster.
+
+But LSTM is the default industry choice. GRUs often work just as well.
+
+** Bidirectional RNN
+
+BRNN let you take infos from both the past and the present! So far, we looked at uni directional or forward RNNs.
+
+So, additionally we have a backwards connection. 
+
+This is still an acyclic graph. Frist you calculate all forward activations and all backward activations. With both, you can calculate the outputs for each time step.
+
+BRNN with LSTM is often used. Disadvantage: You need the whole sentence for this to work. 
+
+** Deep RNNs 
+
+Stack multiple layers on top of each other for deep RNNs. 
+
+Just as you'd think Activations are now layer-indexed:
+
+$a^{[1]<0>}, a^{[2]<0>}, a^{[3]<0>}$ etc. 
+
+Activation $a^{[l]< t>}$ is fed into $a^{[l]< t+1>}$.
+
+Three layers is already quite deep! Through the time dependency the models get expensive fast. How expensive, exactly? Dunno.
+
+
+* Week 2: Natural Language Processing & Word Embeddings
+
+** Word Representation
+
+Word Embeddings are ways of represent words such that you can use analogies (Man/Woman/King/Queen). 
+
+So far, we used 1-hot representations from a vocabulary. The learning algorithm can't easily generalize from
+
+' In want a glass of orange /juice/ ' to infer .I want a glass of apple /juice/'.
+
+The dot product of the one-hot vectors is zero!
+
+How about a featurized representation? Example:
+
+(of course Andrew does not explain what the numbers are supposed to indicate in a general way. Just a direct answer to the question 'How Food is a Man?' 0.02! Does or doesn't connote much about... ) But this is very standard in the industry so there's probably much thought about this. Interesting!
+
+|        |  Man | Woman |  King | Queen | Apple | Orange |
+| Gender |   -1 |     1 | -0.95 |  0.97 |     0 |   0.01 |
+| Food   | 0.02 |  0.01 |     0 |     0 |  0.97 |   0.98 |
+| Age    | 0.03 |  0.03 |   0.7 |  0.69 |  0.03 |   0.02 |
+| ...    |      |       |       |       |       |        |
+
+You can imagine coming up with say 300 different features so you have a 300 dim vector for representing a Man. (?) 
+
+The featurised representation allows for similarity judgments.
+
+This is one of the most important inventions in natural language processing. 
+
+** Using word embeddings
+
+How to learn the embeddings? We'll deal with that later.
+
+How to use the embeddings effectively? 
+
+- ~Sally Johnson is an orange farmer.~
+- ~Robert Lin is a durian cultivator.~
+
+Say we do NER. If we have word embeddings already, we can infer in the second sentence that durian cultivator is similar to orange farmer, and hence that robert lin is also a name, just as sally johnson. 
+
+Steps
+
+1. Learn word embeddings from large text corpus (1-100B words) or download pre-trained embedding
+2. Transfer embedding to new task with SMALLER training set
+3. Optionally continue to finetune word embeddings.
+
+Very useful for many NLP tasks, e.g. NER, text summarization, parsing etc., less useful for language modelling, machine translation (for the latter you normally have large datasets already).
+
+It's a type of transfer learning.
+
+** Properties of word embeddings
+
+Fascinating: can help with reasoning by analogy. Convey a sense of what these embeddings to.
+
+Let's say we pose the question
+
+Man is to woman as King is to ___? Queen, of course. Say the embedding vectors are
+
+$e_{man}, e_{woman}$. $e_{man} - e_{woman} ~ e_{king} - e_{?}$. So find word such that the equation holds. Paper from 2013: Mikolov et al (2013) linguistic regularities.
+
+find word such that: $argmax_{w} sim(e_w,e_{king}-e_{man}+e_{woman}).$
+
+Remarkably, this actually works. For the similarity, most often, you'd use cosine similarity.
+
+$$sim(u,v) = \frac{u^Tv}{||u||_2||v||_2}$$
+
+Alternatively, you can use euclidean distance as a /dis/similarity measure, too.
+
+Ottawa:Canada as Nairobi:Kenya
+Big:Bigger as Tall:taller
+
+** Embedding Matrix
+
+10,000 word vocabulary (let's say). Let's learn an embedding matrix $E$ with dimensions 300 \times 10,000 with 300 features and one column per word. If you multiply $E$ by a one-hot vector representation (let's say of orange) you would exactly get the 300-dim vector containing the feature values. 
+
+$Eo_{j} = e_{j}$ = embedding for word j.
+
+This is actually not very efficient. Use a specialized function just extracting the column of $E$. But mathematically it's neat to write.
+
+** Learning word embeddings
+
+Historically, the algorithms became /simpler/. Confusingly, these still work super duper. We'll start with a mediumly complicated algorithm to build up intuitions.
+
+Building a neural language model is a reasonable way to predict the next word in the sequence. (Bengio et al 2003 - neural probabilistic model)
+
+Guess what! the embedding matrix can be parameters of a weight matrix. For example, you have a fixed historical window and want to predict the next word. Then use the E matrix as weights for each word. Use backprop & gradient descent to learn to predict the next word.
+
+Simpler?
+
+How to choose the context? For example, 4 words on the left, 4 words on the right, both, etc. Nearby 1 word (more on this later, skip gram model).
+
+research shows: if you really build a language model (i.e., predict the next word): use previous words. Goal is learn word embedding: able to use many different contexts.
+
+** Word2Vec
+
+(Mikolov et al 2013 again). 
+
+*** Skip grams
+'I want a glass of orange juice to go along with my cereal.'
+
+Randomly choose a context word, an then randomly choose target words. E.g. choose orange, then targets 'juice', 'cereal', 'my' etc.
+
+*** Model
+
+Vocab size 10k. Learn:
+
+context $c$ \rightarrow target $t$
+
+$o_c \rightarrow E \rightarrow e_c \rightarrow o_{softmax} \rightarrw \hat{y}$
+
+$$p(t|c) = \frac{e^{\theta_t^Te_c}{\sum_j e^{\theta_j^Te_c}$$
+
+Simple log loss function. 
+
+So $E$ has lots of parameters and $\theta$. 
+
+Turns out, there are problems! computationally expensive. The softmax classification costs a lot to compute. You can use a hierarchical softmax classifier with cost $\log|v|$. Not quite clear how exactly this helps, but it does apparently.
+
+A different even simpler method is negative sampling.
+
+How do we sample the context c? You don't really want to get stopwords like the, of, a, .... Instead, balance out sampling to consider less common words. 
+
+** Negative Sampling
+
+From the Mikolov paper again.
+
+In principle, we are changing the softmax classifier to just a few binary classifier for chosen words. One positive case, and some negatives. It's not very exciting.
+
+** Glove word vectors
+
+Glove = global vectors for word representation. 
+
+Let $x_{i,j}$ = number of times word i (t) appears in context of j (c) (or the other way round). Say +- 10 words. 
+
+minimize $\sum_{ij} f(X_{ij}) (\Theta_i^Te_j + b_i + b_j - \log X_{ij})^2
+
+$f$ is a weighting function relating to the frequency of words.
+
+Huh? how can a simple algorithm like this really work? Well, it does, so. 
+
+We started off with this featurization view. But you cannot guarantee that the learned features are actually interpretable. Some linear algebra 'proof' for it given, but so unclean it's not interpretable.
+
+** Sentiment classification
+
+Challenge: not a huge training set. Good to use embedding, ey! 
+
+'the dessert is excellent!'
+
+Standard word embedding modell can deal with this. But!
+
+'Completely lacking in good taste, good food, good ambience' is harder. 
+
+Try a embedding into RNN model instead, where the last word in the sentence outputs the sentiment. 
+
+** Debiasing word embeddings
+
+Bias as in gender, ethnicity etc bias. 
+
+Problem: Man:computer_programmer as woman:homemaker. Enforces unhealthy stereotypes. 
+
+Word embeddings reflect biases in texts used to train the model.
+
+How to address these biases?
+
+1. Identify bias direction. $average(e_{he} - e_{she}, e_{male} - e_{female}, ...$  gives the gender bias direction. Usually we use Singular value decomp instead of average.
+2. Neutralize: for every word not definitional, project to get rid of bias. Words like grandmother, -father are intrinsically gendered (gender is part of definition), but let's say jobs which shouldn't be gendered. Project to (orthogonal from bias) non-bias direction.
+3. Equalize pairs. Make sure that grandmother / grandfather are equidistant from non-bias direction. 
+
+* Week 3 Sequence models & Attention mechanism
+
+** Basic models
+
+Sequence to sequence model: for e.g. translation. One possibility is an encoder/decoder structure. Also works for image captioning with a conv net as encoder. Then attach a variable length RNN as the decoder.
+
+** Picking the most likely sentence
+
+Build a /conditional language model/. Decoder network is pretty much the language model from before. Machine translation adds an encoder network. You want to maximize then joint probability of the translation given the original sentence, so to maximize $P(y^{<1>},y^{<2>},\dots,y^{<T_y>}|x)$. This is an algorithmic search problem (since the first word gets fed as input to the next timestep etc.)
+
+** Beam Search
+
+Has an integer parameter $B$ for the beam width.
+
+1. select $B$ highest probability words $P(y^{<1>}|x)$ on slot 1 of the sentence. 
+2. For all $B$ highest probability words, feed it to the next timestep, and take the $B$ highest $P(y^{<1>},y^{<3>}|x) = P(y^{<1>}|x)P(y^{<2>}|x,y^{<1>})$
+3. Proceed analogously to the end.
+
+if you set $B=1$, you get greedy search.
+   
+** Refinements to Beam search
+
+Beam search maximizes
+
+$$argmax_y \prod^{T_y}_{t=1}P(y^{< t>}|x,y^{<1>},\dots,y^{< t-1>})$$
+
+Because of floating point operations we do logs instead.
+
+$$\frac{1}{T_y^\alpha} argmax_y \sum_{t=1}^{T_y}\log P(y^{< t>}|x,y^{<1>},\dots,y^{< t-1>})$$
+
+Problem: favors very short translation b/c of small numbers multiplying (in the product case, similar in log case). So let's take the average instead, where \alpha is a hyperparameter.
+
+Choose B?
+
+The larger B, the better the results but the more computationally expensive. 10 to 100 is considered large. But 1000 to 3000 not unheard of!
+
+Beam search is faster than Breadth first or Depth first but not guaranteed to find maximum posterior probability. \rightarrow heuristic.
+
+** Error Analysis on Beam search
+
+Take two candidate translation sentences $y^*, \hat{y}$, where $y*$ is the human chosen best translation and $\hat{y}$ is the output of Beam search. Use the RNN to calculate $P(y^*|x)$ and $P(\hat{y}|x)$. 
+
+If $P(y^*|x)$ > $P(\hat{y}|x)$ then Beam search is at fault, since it chose $\hat{y}$.
+
+If $P(y^*|x)$ < $P(\hat{y}|x)$ then RNN model is at fault. 
+
+If the Beam search if at fault often, then maybe increase beam size. If the RNN is at fault, maybe use a deeper RNN.
+
+** Bleu score
+
+What if there are many good solutions? use Bleu score (bilingual evaluation understudy). 
+
+$p_n$ = Bleu score on n-grams only.
+$BP$ = brevity penalty, penalized shorter translations.
+
+$$BP \exp(\frac{1}{4}\sum_{n=1}^4 p_n)$$
+
+$$p_n = \frac{\sum_{n-grams \in \hat{y}} Count_{clip}(n-gram)}{\sum_{n-grams \in \hat{y}} Count(n-gram)}$$
+
+** Attention model Intuition
+   Attention models help deal with long sentences which are quite annoyingly difficult. Let's look only at part of the sentence at a time to increase translations scores.
+   
+   Jane visite l'Afrique en septembre. Use a bidirectional RNN. Have additional weights $\alpha^{<i,j>}$ that determine the context effectiveness, i.e. how much the /ith/ english word is affected by the /jth/ french word (when translating french to english.
+
+** Attention model
+
+    Bidirectional Gru or Lstm. Over that, a forward direction RNN. The attention weights determine the influence of each timestep of the bidirectional RNN.
+
+    $\alpha^{< t,t'>}$ = amount of 'attention' $y^{< t>}$ should pay to $a^{< t'>}$.
+
+    $a^{< t>} = (\vec{a}^{< t>}, \overleftarrow{a}^{< t>})$
+
+    $c^{<1>} = \sum_{t'} \alpha^{<1,t'>}a^{< t'>}$
+
+    Compute a basically by using a softmax over $e^{< t,t'>}$. The $e$'s are learned through a mini neural net with inputs $s^{< t-1>}$ and $a^{< t'>}$ using backprop.
+
+** Speech Recognition
+
+   Problem: audio clip $x$ \rightarrow transcript $y$.
+
+   First step usually to run a spectogram over the audio data. Back in the day, people used phonemes. Attention models work well for this.
+
+   CTC: Connectionist temporal classification cost for speech recognition. Usually, the number of input timesteps is prohibitively large (easily > 1000). What should the output look like? For example, "ttt_h_eee___SPACE___qqq__" is the generated output, then collapse into "the q"
+
+   Simpler: just trigger word detection.
+
+** Trigger word detection
+
+Needed for amazon echo (/alexa/) etc. No wide consensus yet for what's the best algorithm.
+
+Model: set all y's to 1 whenever there is a trigger word said, 0 otherwise.

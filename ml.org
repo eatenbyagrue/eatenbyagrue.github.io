@@ -1,0 +1,799 @@
+#+TITLE: Notes on Coursera, Machine Learning, 2019
+#+AUTHOR: By Me
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: H:10
+
+* Week 1 Introduction
+** Introduction
+
+Machine Learning: Field of study that gives computers the ability to learn without being explicitly programmed. (Arthur Samuel, 59)
+
+Machine Learning: Well-posed learning problem: A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E. (Tom Mitchell, 1998)
+
+Example: playing checkers.
+
+E = the experience of playing many games of checkers
+
+T = the task of playing checkers.
+
+P = the probability that the program will win the next game.
+
+In general, any machine learning problem can be assigned to one of two broad classifications:
+
+Supervised learning and Unsupervised learning.
+
+** Supervised Learning, e.g. Linear Regression. 
+
+Regression = predict continuous valued output (e.g. price). 
+Classification = discrete valued output (e.g. 0 or 1), maybe with probability
+
+Support Vector Machines are able to deal with an infinite amount of features by using a neat mathematical trick.
+
+** Unsupervised Learning
+
+Usually Clustering algorithm. E.g. in computing clusters (in data centers), social network analysis, market segmentation, astronomical data analysis. 
+
+Non-clustering: Cocktail party problem: Different audio sources, separate them. Finding structure in a chaotic environment. 
+
+** Model Representatiomn
+
+m - number of training examples
+x - input variable
+y - output/target variable
+(x,y) - one training example
+(x^(i), y^(i)) - i^th training example
+
+Training Set
+         |
+Learning Algorithm
+         |
+Size  -> h -> Estimated price
+of house
+x   hypothesis  estimated y
+h maps from x to y
+
+h_\theta (x) = \theta_0 + \theta_1 x (linear function)
+
+Linear regression with one variable (x)
+= Univariate linear regression
+
+** Cost Function
+
+Come up with values for \theta_0, \theta_1, that fit the data well i.e. is close to the training examples.
+
+Minimize squared error: Find values of theta s.t. the average error is minimal. Cost function = Objective function
+
+J(\theta) - function of theta
+h(x) - function of x
+
+** Gradient Descent
+
+General algorithm to find the minimum of a function. Not guaranteed to find global optimum in the general case.
+
+The direction of each step is given by the partial derivatives of J(\theta). How exactly does one determine the direction of of steepest descent? For each parameter, you only have two options to choose from (left, right, or increase or decrease theta). If the derivative is positive, you want to move to the left, i.e. decrease theta. If the derivative is negative, you want to move to the right, i.e. increase theta. This is achieved by setting 
+
+\theta_j := \theta_j - \alpha * (\partial / (\partial \theta_1) J(\theta_1)
+
+As we approach a local minimum, gradient descent will automatically take smaller steps. No need to decrease the learning rate over time! 
+
+For Linear Regression, the cost function is always a bowl-shaped function, i.e. convex function and only has one (the global) optimum.
+
+*Batch Gradient Descent*: Each step of gradient descent uses all of the training examples
+
+Normal Equation can solve the problem analytically; but gradient descent apparently scales better.
+
+** Linear Algebra Review
+
+In machine learning here, 1-indexed vectors are assumed. But sometimes switched to 0-indexed vectors.
+
+Trick: Prediction = DataMatrix * ParametersVector
+
+Matrix multiplication is not commutative
+Matrix multiplication is associative.
+Matrix multiplication with the identity matrix with the right dimensions is commutative
+
+Square matrizes can have inverses:
+A(A^-1) = (A^-1)A = I (identity matrix)
+Usually matrizes not having an inverse is not really an issue. They are in some sense too close to zero.
+
+* Week 2 Linear Regression with Multiple Variables
+** Multivariate Linear Regression
+
+n = number of features
+x^(i) = input (features) of ith training example.
+x_j^(i) = value of feature j in ith training example. 
+
+$h_\theta(x) = \theta_0x_0 + \theta_1x_1 + \theta_2x_2 + ... + \theta_n x_n$
+
+Define x_0^(i) = 1 for all i
+
+\theta is an n+1 dimensional vector
+
+h_\theta(x) = \theta^T x
+
+** Feature Scaling - Data Scientists don't believe this one simple trick!
+
+Make sure features are on a similar scale to improve convergence speed.
+
+$-1 \leq x_i \leq 1$ approximately
+
+Can use mean normalization. 
+
+Replace $x_i$ with $x_i - \mu_i / s_i$, where $s_i$ is the range of that feature.  
+
+** Learning rate
+
+Tip: plot $J(\theta)$! Update $\alpha$ accordingly: If not decreasing on every step, try a lower $\alpha$! If decreasing too slowly, try higher $\alpha$. 
+
+For sufficiently small $\alpha$, $J(\theta)$ provably decreases on every iteration.
+
+** Features and Polynomial Regression 
+
+Create new features by multiplying features.
+
+Polynomial Regression is easily implementable: Add $x_j^2$ (and higher powers) as a new feature with additional $\theta_{j+1}$ - remember feature scaling! 
+** Normal Equation
+
+Method to solve for $\theta$ directly. Intuition: set derivative to zero and find minimum. Also works in the multivariate case! 
+
+construct matrix of training data:
+$$
+X = \begin{bmatrix}
+1 & 2014 & 5 & 1 & 45\\
+1 & 1416 & 3 & 2 & 40\\
+1 & 1534 & 3 & 2 & 30\\
+1 & 852 & 2 & 1 & 36
+\end{bmatrix}
+$$ 
+$$x^{(i)} = \begin{bmatrix} x_0^{i} \\ x_1^{i} \\ x_2^{i} \\ \vdots \\ x_n^{(i)} \end{bmatrix}$$
+$$ X=\begin{bmatrix}(x^{(1)})^T \\ x^{(2)})^T \\ \vdots \\ x^{(2)})^T \end{bmatrix}$$
+
+Normal Equation:
+$$ \theta = (X^TX)^{-1}X^Ty $$
+
+Note that we don't need feature scaling here.
+
+When to use Gradient Descent or Normal Equation? NE goes slow when n gets large, at like 10000. GD: $O(Kn^2)$ NE: $O(n^3)$ 
+
+*** Noninvertibility 
+
+Sometimes, $X^TX$ is not invertible. This can happen if there are too many features or redundant i.e. linear dependent features.
+Octave's pinv calculates the pseudoinverse which always exists (?)
+
+* Week 3 Logistic Regression
+** Introduction
+
+Example: Spam/not Spam, Fraudulent transaction (yes, no), tumor: malignant/benign.
+$y \in \{0,1\}$: 0: Negative Class, 1: Positive Class
+
+Binary class problem set. Multiclass later.
+You could treshold linear regression, but this does not work well.
+
+$h_\theta(x) = g(\theta^Tx)$
+$g(z) = \frac{1}{1 + e^-z}$
+
+Such that $h_\theta(x) = 0.7$ means that x has a 70% chance of being positive class: $h_\theta(x) = p(y=1|x;\theta)$
+
+Find a Decision boundary, e.g. $x_1 + x_2 \geq 3$
+
+** Cost Function for Logistic Regression
+
+Optimization objective. If we just use the one from Linear Regression, we get a non-convex cost function (many local optima). Instead use:
+
+$$Cost(h_\theta(x),y) = \begin{cases} -log(h_\theta(x)) & \text{if } y = 1 \\ -log(1 - h_\theta(x)) & \text{if } y = 0  \end{cases}$$
+
+or more succinctly,
+
+$$J(\theta) = -1/m [\sum_{i=1}^m y^{(i)} \log h_\theta(x^{(i)} + (1-y^{(i)}) \log(1 - h_\theta(x^{(i)}))]$$
+** Advanced optimization
+
+Use more elaborate algorithms than gradient descent--like conjugate gradient, BFGS, L-BFGS--the section teaches you only how to use the octave API, nothing about those algorithms. Skip.
+
+** Multiclass classification
+
+E.g. Email tagging, medical diagrams, weather, etc.
+
+$y = 1,2,3,4,...$
+
+Strategy: One-vs-all classification. Augment training s.t. all 
+
+** Overfitting
+
+Overfitting: Algorithm has high variance - space of possible hypotheses is too large.
+Too many features may cause the hypothesis fit the training set very well, but fail to generalize to new examples. Overfitting has the effect of generalizing not well.
+
+Ways to address overfitting:
+1. Reduce number of features
+   - Manually select features
+   - Model selection algorithm
+2. Regularization
+   - Reduce magnitudes/values of parameters
+   - Works well with lots of features contributing little
+
+** Regularization: Cost Function
+
+Small values for parameters $\theta_0,\dots,\theta_n$ leads to a simpler hypothesis.
+
+Add a regularization term add the end. 
+
+$J(\theta) = \frac{1}{2m} [\sum^m_{i=1} (h_\theta(x^{(i)} - y^{(i)})^2 + \lambda \sum^n_{j=1} \theta_j^2]$ 
+
+$\lambda$ is the regularization parameter and controls the trade-off between fitting and overfitting. Too large lambdas result in underfitting.
+
+* Week 4 Neural Networks: Representation
+** Non-linear Classification
+
+Problem: number of quadratic features dramatically increases with linear non-linear approximation (i.e. including $x_1x_2$, $x_1^2$ etc. which are necessary to fit a complex dataset. Higher-order polynomials even more problematic! Practically impossible to do image recognition.
+
+Guess what's much better!
+
+** Neurons and the Brain
+
+Computers only recently became fast enough to run large enough neural networks to be really useful. Inspired by the human brain. Hypothesis: the brain works with a single learning algorithm. evidence: auditory cortex that learns to see visually (in a controlled experiment on animals). Also: Learning to see with your tongue. 
+
+** Model Representation
+
+Dendrites: 'input wires', Axon: 'output wire'. Neuron model: logistic unit with sigmoid (logistic) activation function $h_\theta(x) = 1/(1+exp(-\theta^Tx))$ with the parameters as weights!
+
+$a_i^{(j)} = $ "activation" of unit i in layer j
+$\Theta^{(j)}$ = matrix of weights controlling function mapping from layer j to layer j + 1 
+
+e.g.
+$a_1^{(2)} = g(\Theta_{10}^{(1)}x_0 + \Theta_{11}^{(1)}x_1 + \Theta_{12}^{(1)}x_2 + \Theta_{13}^{(1)}x_3)$
+
+Dimensions of $\Theta^{j}$ are $s_{j+1} (s_j + 1)$. 
+
+How can NNs help to compute a nonlinear hypothesis? 
+
+Just the last layer of neural net with one output node is JUST computing logistic regression with the output of the previous layer as input features. The previous layers work similarly. This way, the network 'learns its own features'.
+ 
+This is the input to a node:
+$z^{(2)} = \Theta^{(1)}a^{(1)}$
+
+** Example Calculation
+* Week 5 Neural Networks: Learning
+** Neural networks cost function
+
+L = total no. of layers in network
+$s_l$ = no. of units (w/o bias) in layer l
+
+Binary classification: y=0 or 1 vs. Multi-class classification (K classes): $y \in R^K$ with K output units
+
+
+$J(\Theta) = -\frac{1}{m} [\sum_{i=1}^m\sum_{k=1}^m y_k^{(i)}\log h_\theta(x^{i})_k + (1 - y_k^{(i)}\log(1 - h_\theta(x^{(i)})_k)] + \frac{\lambda}{2m} \sum_{l=1}^{L-1}\sum_{i=1}^{s_l}\sum_{j=1}{s_{l+1}}(\Theta_j^{(l)})^2$ 
+
+** Backpropagation algorithm. 
+
+"Backpropagation" is neural-network terminology for minimizing our cost function, just like what we were doing with gradient descent in logistic and linear regression. Our goal is to compute:
+
+$\min_\Theta J(\Theta)$
+
+That is, we want to minimize our cost function J using an optimal set of parameters in theta. In this section we'll look at the equations we use to compute the partial derivative of $J(\Theta)$:
+
+$\frac{\partial}{\partial \Theta_{ij}^{(l)}} J(\Theta)$
+
+$\delta_j^{(l)}$ = error of node j in layer l
+
+It can be shown that, if you ignore the regularization term, 
+$\frac{\partial}{\partial \Theta_{ij}^{(l)}} J(\Theta) = a_j^{(l)}\delta_i^{(l+1)}$.
+
+** Gradient Checking
+
+Helps make the implementation bug-free. Idea: numerically estimate gradient.
+
+$\partial/\partial J(\theta) = \frac{J(\theta + \epsilon) - J(\theta-\epsilon)}{2\epsilon}$,
+
+where $\epsilon$ is around $10^{-4}$. Of course, slightly more complicated with multiple epsilon.
+
+Then check that it is somewhat the same as the gradient calculated with backprop.
+
+** Random initialization
+
+Zero initialization of the weights won't work: All of the hidden units would compute the same function. Useless! Initialize each $\Theta^{(l)}_{ij}$ to random value in  $[\epsilon, -\epsilon]$
+
+** Putting it all together
+
+Usually, the more hidden units per layer, the better. Later more on how to choose a good network architecture.
+Number of hidden units per layer = usually more the better (must balance with cost of computation as it increases with more hidden units)
+Defaults: 1 hidden layer. If you have more than 1 hidden layer, then it is recommended that you have the same number of units in every hidden layer.
+
+Steps for training a neural net.
+
+1) Randomly initialize weights
+2) Implement forward propagation
+3) Implement code to compute cost function 
+4) Implement backprop to compute partial derivatives
+5) Use gradient checking to see that the implementation works correctly.
+6) Use gradient descent or advanced optimization with backprop to minimize the cost function.
+
+Start with using a for loop for backprop!
+In general, $J(\theta)$ is not convex. But in practice usually not a big problem.
+* Week 6 Advice for Applying Machine Learning
+** Evaluating a Hypothesis
+
+How to see whether you're overfitting? One way: Split into training and test set. roughly 70%/30%. Calculate the error on the test set. 
+For example with the 0/1 misclassification error.
+
+** Model Selection and Train/Validation/Test Sets
+
+Problems with fitting a meta-parameter, e.g. the degree of polynomial, to the test set: Chosen model probably won't generalize well to new data. Instead have:
+
+Training set, ca 60%, Cross validation set, ca. 20%, and test set, ca 20%.
+Calculate train set error, cv set error and test set error. Chose the hypotheses based on the cross validation error. Then the hypothesis can be tested normally against the test set and its performance reported.
+
+** Diagnosing Bias vs. Variance
+
+High Bias = underfitting, High Variance = overfitting, basically. If $J_cv$ is high and $J_train$ is high, then we may have a bias problem. If $J_train$ is very low, but $J_cv$ is high, then we have a high variance problem.
+
+** Regularization and Bias/Variance
+
+Regularization helps preventing overfitting. With very large $\lambda$, we get a high bias and underfit. With a too small $\lambda$, we get a high variance and overfit. 
+How to choose $\lambda$? Use the same strategy as before, but vary $\lambda$ now instead of the dimension (say). $J_{cv}(\theta)$ is computed without the regularization term. 
+
+** Learning Curves
+
+Plot the training error and cv error over the size of artificially reduced training sets.
+Training error will generally increase with the number of training examples. Cross validation error will generally decrease with the number of training examples. 
+
+If the learning algorithm has high bias, then cv error and train error will converge almost. In this case, more training data doesn't help much.
+If the learning algorithm has high variance, then training error and cv error will be far apart. Getting more training data is likely to help.
+
+** Deciding what to do next
+
+- Get more training examples fixes high variance
+- Try a smaller sets of features fixes high variance
+- Try getting additional features fixes high bias
+- Try adding polynomial features fixes high bias
+- Try decreasing lambda fixes high bias
+- Try increasing lambda fixes high variance
+
+Small neural networks
+- prone to underfitting
+- computationally cheap
+
+Large neural networks
+- prone to overfitting (use regularization to address)
+- computationally more expensive
+
+Usually, larger networks yield better performance.
+
+** Prioritizing what to work on
+What to work on? How not to waste time? Example: Spam classifier. 
+- Don't decide via gut feeling, but instead list options & evaluate them carefully. e.g.
+  - Decide on types of features. For spam: 10k - 50k most common words.
+  - Collect lots of data (for example "honeypot" project but doesn't always work)
+  - Develop sophisticated features (for example: using email header data in spam emails)
+  - Develop algorithms to process your input in different ways (recognizing misspellings in spam).
+** Error Analysis
+- Start with simple algorithm to implement quickly, test it on cross-validation data.
+- plot learning curves to decide if more features etc. are likely to help.
+- Avoid premature optimization!
+- Decide on feature augmentation (e.g. stemming) based on quick-and-dirty system comparing cross validation error.
+** Error Metrics for Skewed classes
+If you have a lot more data of one class than the other (in a logistic regression setting), then just predicting the dominant class gives you a reasonably good classification error. This is not good enough as a metric.
+Precision and Recall help: 
+
+| Predicted Class \ Actual Class | 1              | 0              |
+|                              1 | True positive  | False Positive |
+|                              0 | False Negative | True Negative  |
+
+Precision = True Positive / (True Positive + False Positive)
+Of all patients we predicted positive, what fraction actually has cancer?
+
+Recall = True Positive / (True Positive + False Negatives)
+Of all patients that actually have cancer, what fraction did we correctly detect as having cancer?
+
+Usually, y=1 is the presence of the rare class 
+** Trade off Precision and Recall
+In a logistic regression setting:
+- if the threshold is increased, we increase the precision, but get lower recall.
+- if the threshold is lowered, precision is decreased, but recall gets higher.
+
+Trade-off by varying the threshold. Many different forms that plot can look like.
+
+F_1 score combines both precision and recall:
+$F_1 = \frac{PR}{P+R}2$
+
+** Data for Machine Learning
+Sometimes, getting a lot of data is very effective.
+
+"It's not the best algorithm that wins. It's who has the most data"
+
+Under which circumstances is this actually the case?
+Assume feature x has sufficient information to predict y accurately. Test: can a human expert confidently predict y from x?
+
+Under this assumption: 
+With a low bias algorithm (many parameters, logistic regression with many features, etc.) a large training set helps to get low variance, as a lot of data makes the model unlikely to overfit.
+
+* Week 7 Support Vector Machines
+** Optimization Objective
+Support Vector Machines (SVM) can sometimes solve a problem better than other algorithms.
+Start with logistic Regression. Modify it a bit to get SVM. Change the cost function slightly into a 2-part function with constant derivative.
+Replace lambda with C.
+
+$$ \min_\theta C \sum^m_{i=1} [ y^{(i)} cost_1(\theta^T x^{(i)}) + (1 - y^{(i)}) cost_0(\theta^T x^{(i)})] + \frac{1}{2} \sum^n_{j=0} \theta_j^2 $$
+
+SVM will output $$h_\theta = 1$$ if $$\theta^T x \geq 0$$, and 0 otherwise.
+
+** Large Margin Classifier Intuition
+
+If y = 1, we wand $$\theta^T x \geq 1$$ and not just $$\theta^T x \geq 0$$.
+
+What happens to the decision boundary? It has a larger margin to the training data. SVMs are more sophisticated than that, tho, and aren't as susceptible to outliers, depending on the value of regularization parameter C (= 1/lambda).
+
+** Mathematics Behind Large Margin Classification
+
+Inner product of two vectors: $$u^T v$$. $$||u||$$ is the euclidean length of u. p = length of projection of v onto u. $$u^T v = p * ||u||$$. p is signed, meaning it can be negative if the angle between u and v is greater than 90 degrees.
+
+SVM Decision boundary: $$\min_\theta \sum \theta_j^2 = 1/2 (\theta_1^2 + \theta_2^2) = 1/2 (\sqrt{\theta_1^2 + \theta_2^2})^2 = 1/2 ||\theta||^2$$, for the simplification that n=2. The vector \theta is orthogonal to the decision boundary. Then if the decision boundary if close to training examples, the projection of that datum's vector onto theta is quite short, meaning that for the constraints to hold, the norm of theta has to increase. But we are minimizing the norm of theta! 
+
+** Kernels
+
+Kernels are a way to add non-linearity to SVMs. They define new features that employ a similarity metric for data points, e.g. a new feature $$f_1 = exp(- \frac{||x - l^{(i)}||^2}{2\sigma^2})$$, where l is a landmark somewhere in feature space. 
+
+How are the landmarks computed? How many should we choose? Just use the training examples as landmarks!
+
+Because of computational tricks, minimizing the SVM cost function is pretty fast.
+
+Bias/Variance trade off: Large C: lower bias, higher variance (prone to overfitting). Small C: Higher bias, low variance. (Prone to underfitting). Large sigma: Higher bias, lower variance. Small sigma: Lower bias, higher variance.
+
+** Using an SVM
+
+Use software package for SVMs (gna). 
+- Linear Kernels are standard linear classifiers. No Kernels used, really! When to use? if n (features) is large, and m (training examples) is small. Why use over standard logistic regression? I don't get it.
+- Gaussian Kernels (the one discussed). If n small, m large.
+- Polynomial kernels (performs worse usually than gaussians)
+- Esoteric kernels: string kernels, chi-square kernels, historgram kernels, intersection kernels, ...
+
+The octave package may expect you to provide the kernel function. Use feature scaling before! Kernel functions need to satisfy Mercer's theorem. 
+
+Multiclass classification standardly through the library or with a one-vs-all method.
+
+When to use Logistic Regression vs SVM?
+
+If n is large relative to m, use logistic regression, or svm without a kernel.
+If n is small, m is intermediate: Use SVM with Gaussian kernel
+IF n is small, but m is large, create/add more features, then use logistic regression or SVM without a kernel.
+Neural Nets likely to work in most of the settings, but slower to train. 
+* Week 8 Unsupervised Learning
+
+** K-means Clustering
+Non-labeled data. Cluster them! For example with the K-means algorithm. 
+Iterative algorithm with 2 steps: 1) Cluster assignment, 2) Move Centroid.
+After a while, the algorithm converges.
+
+- K (number of clusters)
+- Training set $$\{x^{(1)}, x^{(2)}, \dots, x^{(m)}\}$$
+
+Randomly initialize K cluster centroids $$\mu_1, \mu_2, \dots, \mu_K \in \mathbb{R}^n$$
+Repeat {
+  # Cluster assignment step
+  for i = 1 to m
+    $$c^{(i)} := $$ index (from 1 to K) of cluster centroids closest $$x^{(i)}$$
+  # Move centroid step
+  for k = 1 to K
+    $$\mu+k := $$ average of points assigned to cluster k.
+}
+
+This is also applicable to non-separated clusters. What does it help? E.g.clustering height/weight to find out tshirt sizes.
+** Optimization Objective
+What is the function that K-means optimizes? Minimizes J with respect to cluster assignments and clusters.
+
+$$J(c^{(1)},\dots,c^{(2)},\mu_1,\dots,\mu_K) = 1/m \sum^m_{i=1} ||x^{(i)} - \mu_{c^{(i)}}||^2$$
+
+** Random Initialization and Avoiding Local Optima.
+
+Set K to less than number of training examples. Randomly pick K training examples. With unlucky initialization, K-means can end up in local optima. Solution? Do it 100 times over! Haha, great. Works good for low K = 2 - 10. 
+
+How to choose the number of clusters? No fixed way. Most often choose manually.
+
+** Dimensionality Reduction
+
+Reduce data from 2D to 1D, for example. Works for highly correlated dimensions. Project data on a new feature. This also works for more dimensions, of course.
+
+A motivation is to visualize the data better. There is no meaning assigned to the new dimensions, you have to recover it manually! PCA will allow us to find these new dimensions.
+
+** Principal Component Analysis (PCA)
+
+PCA tries to find a lower-dimensional surface, such that the projection error is minimized. Good practice to do feature scaling and mean normalization. 
+
+Reduce from n-dimension to k-dimension: Find directions (vectors $$u^{(1)}, u^{(2)}, \dots, u^{(k)} \in \mathbb{R}^n$$ onto which to project the data so as to minimize the projection error.
+
+** PCA Algorithm
+
+First! Do data processing: feature scaling, mean normalization. The procedure to find the best values for the directions is quite easy, while the proof is rather hard.
+
+- Compute Covariance matrix
+$$\Sigma = 1/m \sum_{i=1}^n(x^{(i)})(x^{(i)})^T$$
+- Compute eigenvectors of matrix $$\Sigma$$ by singular value decomposition. 
+- Get resulting matrix $$U$$, take first k columns -> directions!
+- Translate each data point x into a data point z in a space spanned by the new vectors.
+
+** Reconstruction
+
+The original data can be reconstructed. How? $$x_{approx} = U_{reduce} * z$$ will yield a value close to the original value. If the projection error was not large, we will get a good result!
+
+** Choosing the number of principal components
+
+PCA tries to minimize the average squared projection error. Choose k to be the smallest value to that 
+
+$$ \frac{\sum_{i=1}^m || x^{(i)} - x_{approx}^{(i)}) ||^2}{\sum_{i=1}^m || x^{(i)} ||^2} \leq 0.01$$ such that "99% of variance is retained". Algorithm uses a trick with matrizes.
+
+** Advise on how to apply
+ 
+Most common use: Speed up supervised learning algorithm, so as a data preparation step. Useful when loads of features (> 10k). 
+
+First extract unlabeled datasets. Then use PCA on x's. Then reapply labels. Only run PCA on the training set! The found mapping U_reduce can then also be applied to x_cv and x_test.
+
+So PCA is used for...
+- Compression
+  - Reduce memory/disk usage
+  - Speed up learning algorithm
+  - Choose k by % of variance retained
+
+- Visualization
+  - k = 2 or 3
+
+Misuse of PCA: Try to prevent overfitting. It might work OK, but it's not good. Instead use regularization. Use PCA only if without it won't work.
+
+
+
+* Week 9 Anomaly Detection
+** Problem Motivation
+If p(x_test) < epsilon then flag anomaly. Otherwise ok. 
+Application: Fraud detection. Features are user's activities. Identify unusual users. 
+Application: Computers in a data center. Features e.g. memory use, CPU load, traffic etc.
+** Gaussian Distribution
+If $x \in \mathbb{R}$ is a distributed Gaussian with mean $\mu$ and variance $\sigma^2$, $x \sim N(\mu, \sigma^2)$, then: $p(x; \mu, \sigma^2) = \frac{1}{\sqrt{2\pi} \sigma} \exp{-\frac{(x - \mu)^2}{2\sigma^2}}$.
+
+Parameter Estimation: Given a dataset, what are the parameters of my distribution? (If normally distributed).
+$\mu = 1/m \sum_{i=1}^m x^{(i)}$, 
+$\sigma = 1/m \sum_{(i=1)}^m(x^{(i)} - \mu)$.
+
+** Algorithm
+
+   $x_1 \sim N(\mu_1, sigma_1^2), \dots$
+$p(x) = \prod_{j=1}^n p(x_j;\mu_j,\sigma_j^2)$
+
+** Developing and Evaluating an Anomaly Detection System
+
+How to do single-number evaluation? Assume labeled (as normal/anomalous) data. 10000 normal engines, 20 flawed engines. 
+
+Training set: 6000 good engines, y = 0. Use these to estimate $\mu$ and $\sigma^2$.
+Cross validation set: 2000 good engines, 10 anomalous
+Test, 2000 good engines, 10 anomalous.
+
+Fit model $p(x)$ on training set.
+On cross validation / test example, predict
+y = 1 if p(x) < epsilon (anomaly),
+y = 0 if p(x) >= epsilon (normal).
+
+Possible evaluation metrics:
+  - true positive, false positive, false negative, true negative
+  - Precision, Recall
+  - F_1 score
+
+Use cross validation set to choose parameter epsilon. 
+
+** Anomaly Detection vs Supervised Learning
+
+Why not just use Supervised Learning algorithm? 
+
+Use Anomaly Detection:
+- If you have a very small number of positive (anomalous) examples,
+- Large number of negative (normal) examples.
+- Many different types of anomalies
+- future anomalies may look nothing like any of the anomalous examples we've seen so far.
+- Fraud detection
+- Manufacturing
+- Machines in Data Center
+
+Supervised Learning:
+- Large number of positive and negative examples.
+- Enough positive examples, future examples likely to be similar to ones in training set.
+- Spam
+- Weather 
+- Cancer
+
+** Choosing Features 
+
+Features are modeled using normal distributions. What if data doesn't look Gaussian on the histogram? Do data transformation (why no beta distribution instead? Don't know.) For example, replace x with log(x) or sqrt(x) or similar. Weird flex but ok.
+
+Which features to choose? Want: p(x) large for normal examples. p(x) small for anomalous examples. Problem: p(x) is similar for normal and anomalous examples.
+
+Solution: GET INSPIRED by anomalous examples to create a new feature such that the data shows that the example is anomalous. For example. CPU Load divided by Network traffic. 
+
+** Multivariate Gaussian Distribution
+
+$x \in \mathbb{R}^n$. Model $p(x)$ all in one go. Parameters: $\mu in \mathbb{R}^n, \Sigma \in \mathbb{R}^{n\times \n}$ (covariance matrix). 
+
+Example: 
+$$ \Sigma = \begin{pmatrix} a_1 & b_1 \\b_2 & a_2\end{pmatrix} $$ 
+These values change the form of the normal distribution. For example, if $a_1 < a_2$, the distribution is squeezed (in dimension $x_1), vice versa it is stretched. $b_1, b_2$ model the correlations between $x_1, x_2$. 
+
+$$\mu = \begin{pmatrix} \mu_1 \\ \mu_2\end{pmatrix} $$ shift the center of the distribution.
+
+$$p(x;\mu,\Sigma) = ((2\i)^{n/2}|\Sigma|^{1/2})^{-1} \exp(-1/2 (x-\mu)^T\Sigma^{-1}(x-\mu))$$
+
+** Anomaly Detection using the Multivariate Gaussian Distribution
+
+Fit model $p(x)$ by
+
+$$\mu = 1/m \sum^m_{i=1} x^{(i)} $$
+$$\Sigma = 1/m \sum^m_{i=1}(x^{(i)}-\mu)(x^{(i)}-\mu)^T $$
+
+Calculate $$p(x)$$, flag anomaly if $p(x) < \epsilon$
+
+You can prove that the original (non-multivariate) corresponds (up to identity!) to a special case of multivariate Gaussian distribution where the dist is axis-aligned, i.e. $b_1,b_2$ are 0, i.e. $\Sigma$ has 0 on off-diagonal entries. 
+
+Original model is used somewhat more often. By adding features one can model dependencies between the features. Multivariate has this built in. But is computationally more expensive, doesn't scale well to large $n$. In addition, multivariate needs more examples than features (mathematical necessity since $\Sigma$ must be invertible).
+
+** Recommender Systems: Problem Formulation
+
+Sometimes you need new features, and learn them first. Predicting movie ratings. 
+$n_u =$ number of users, $n_m$ = number of movies, $r(i,j) = 1$ if user $j$ has rated movie $i$, $y^{(i,j)} =$ rating given by use $j$ to movie $i$.
+
+Our job: fill in missing values.
+
+** Content Based Recommendations
+
+Suppose you have two features per movie $\in [0,1]$, e.g. romance and action.
+One possibility: For each user $j$, learn a parameter $\theta^{(j)} \in \mathbb{R}^3$. Predict user $j$ as rating movie $i$ with $(\theta^{(j)})^T x^{(i)}$ stars.
+
+To learn $\theta^{(j)}$ is basically a linear regression problem. So minimize the squared error term with regularization. Do this e.g. by gradient descent.
+
+This is basically just linear regression for all users on the features. Not extremely interesting. But what if you don't have features for the movies?
+
+** Collaborative Filtering
+
+CF can learn for itself, what features to use. How? Suppose we have a dataset without the values for features. Suppose users told us how much they liked action packed movies, romantic movies etc. 
+
+$$\theta^{(1)} = \begin{bmatrix}0\\0\end{bmatrix},\ \theta^{(2)} = \begin{bmatrix}0\\3\end{bmatrix},\ \theta^{(3)} = \begin{bmatrix}0\\5\end{bmatrix}$$
+
+Given $\theta^{(1)},\dots,\theta^{(n_u)}$, learn $x^{(i)}$ by error minimization. Learn all the features for all the movies at once. 
+
+So now, what to estimate? Apparently by starting randomly and then iteratively estimating theta via x and x via theta. Need to figure out why that works exactly.
+
+Collaborative because users 'collaborate' so everybody gets better recommendations.
+
+** Collaborative Filter Algorithm
+
+Minimize $x^{(i)},\dots,x^{(n_m)}$ and $\theta^{(i)},\dots,\theta^{(n_u)}$ simultaneously.
+
+Do away with the convention of the intercept term, so $x \in \mathbb{R}^n$, since if there is need, the algorithm will learn it by itself.
+
+1. Initialize parameters to small random values.
+2. Minimize cost function using gradient descent (or similar). 
+** Vectorization: Low Rank Matrix Factorization
+Write all predicted ratings up in a matrix $Y$. Further, you have $X$ and $\Theta$, such that $Y = X\Theta^T$. This matrix is 'low rank' in linear algebra. No explanation as to what that is ("don't worry about it"). 
+
+$$X = \begin{bmatrix} - & (x^{(1)})^T & - \\ & \vdots & \\ - & (x^{(n_m)} & - \end{bmatrix},\ \Theta = \begin{bmatrix} - & (\theta^{(1)})^T & - \\ & \vdots & \\ - & (\theta^{(n_u)} & - \end{bmatrix}$$
+
+$$Y = \displaystyle \begin{bmatrix} (x^{(1)})^T(\theta^{(1)}) & \ldots & (x^{(1)})^T(\theta^{(n_u)})\\ \vdots & \ddots & \vdots \\ (x^{(n_m)})^T(\theta^{(1)}) & \ldots & (x^{(n_m)})^T(\theta^{(n_u)})\end{bmatrix}$$
+
+For each product $i$, we learn a feature vector $x^{(i)} \in \mathbb{R}^2$. Not always are the features easily human-understandable.
+
+How to find movies $j$ related to movie $i$ ? Find the 5 movies j with the smalles distance $||x^{(i)} - x^{(j)}||$.
+
+** Mean Normalization
+
+Can make the algorithm a little bit better. If a user hasn't rated anything yet, the algorithm will set all $\thetas$ to 0. But that isn't very useful right now. Change all the other values such that the average rating is 0. 
+
+Then, predict for use $j$ on movie $i$:
+$$\theta^{(j)}^T x^{(i)} + \mu_i$$
+
+
+* Week 10 large Scale Machine Learning
+
+** Learning with Large Datasets
+
+"It's not who has the best algorithms that wins, it's who has the most data"
+
+$m = 100,000,000$ not unrealistic. Then gradient descent can become prohibitively expensive. Maybe pick randomly some examples as a sanity check. If high variance ($J_{CV} >> J_{train}$), then it is prudent to use more data. Methods: Stochastic Gradient Descent, Map Reduce.
+
+** Stochastic Gradient Descent
+
+Suppose linear regression model with gradient descent.
+
+The derivative term can get quite large, so calculating the new derivative with all data points can be quite expensive. Called: Batch gradient descent. 
+
+$$J_{train}(\theta) = \frac{1}{2m} \sum^m_{i=1}(h_\theta(x^{(i)}) - y^{(i)})^2$$
+
+$$\theta_j := \theta_j - \alpha \frac{1}{m} \sum^m_{i=1} (h_\theta(x^{(i)})-y^{(i)})x^{(i)}_j$$
+
+Instead:
+
+$$cost(\theta, (\x^{(i)},y^{(i)})) = \frac{1}{2}(h_\theta(x^{(i)} - y^{(i)})^2$$ 
+
+$$J_{train} (\theta) = \frac{1}{m} \sum_{i=1}^m cost(\theta, (\x^{(i)},y^{(i)}))$$
+
+Algorithm: 
+1.Randomly shuffle dataset
+2. Repeat {
+  for $i = 1,\dots,m$ {
+  $$ \theta_j := \theta_j -\alpha (h_\theta(x^{(i)} - y^{(i)})x^{(i)}_j $$
+    (for $j=0,\dots,n$)
+  }
+}
+Where the part after $\alpha$ is the partial derivative $$\frac{\partial}{\partial \theta_j} cost(\theta,(x^{(i)},y^{(i)})$$.
+
+While this is much faster, it usually doesn't converge. But hovers around a minimum. Up to 10 passes through the data set is common.
+
+** Mini-Batch Gradient Descent
+
+Use $b$ examples in each interation, $b$ is the mini-batch size $\e 2,\dots,100$. 
+
+Go through all training examples in batches of $b$.
+$$\theta_j := \theta_j - \alpha \frac{1}{b} \sum^{i+b-1}_{k=i} (h_\theta(x^{(k)})-y^{(k)})x^{(k)}_j$$
+
+Mini-batch can outperform SGD if the code is properly vectorized.
+
+** Stochastic Gradient Descent Convergence
+
+How to check for convergence?
+How to pick learning rate $\alpha$?
+
+Check that the algorithm is converging don't calculate the cost function all the time. Inefficient! 
+
+During learning, compute $cost(\theta,(x^{(i)},y^{(i)}))$ before updating $\theta$ on $(x^{(i)},y^{(i)})$. Every 1000 iterations or so, plot the cost functioned averaged over the last 1000 examples processed.
+
+By using a smaller learning rate, you might be able to get a better result (lower cost). Sometimes, averaging over more than 1000 examples can better show trends in the cost function. If the cost function is increasing, use smaller $\alpha$!
+
+Normally, $\alpha$ is constant, but it may help to slowly decrease $\alpha$ over time to help convergence.
+
+** Online Learning
+
+Model problems with continuous stream of data coming in. For example, users coming to the website provide new data repeatedly. 
+
+Discard the notion of a training set. Update on one example at a time, then 'throw it away'. Useful if data is essentially free, i.e. almost too much to handle. 
+
+This algorithm can adapt to changes of input data (e.g. in user's preferences).
+
+Very similar to stochastic gradient descent algorithm.
+
+** Map Reduce and Parallelism
+
+Sometimes too much data for one machine. Some say map reduce is an even more important idea than gradient descend.
+
+Suppose Batch gradient descent. $m=400$. Split training set into 4 subsets. Let machines 1...4 compute the gradient for these subsets, or multiple cores. 
+
+Many learning algorithms can be expressed as computing sums of functions over the training set.
+
+* Week 11 Application Example: Photo OCR
+
+** Problem Description and Pipeline
+
+Photo optical character recognition. Where is text in the image? Read text in image. 
+
+Photo OCR pipeline
+
+1) Text detection
+2) Character segmentation
+3) Character classification
+4) Spelling correction (will skip here)
+
+** Sliding Windows
+
+1) Text Detection
+
+Rectangular patches sliding over the image, checking whether it contains a pedestrian (e.g.). Use step-size/stride. Repeat for patches of different sizes, where the larger patches are rescaled such that the resolution is identical to the smaller patches.
+
+Applied to the test set image, a sliding-windows-classifier reveals text as lots of sliding windows. Then apply an expansion algorithm, to connect the segmented windows with text. Then draw rectangles on very wide but low connected regions: These are recognized texts.
+
+2) Character Segmentation
+
+Train classifier on splits between characters. Then use sliding windows classifier to separate characters via splits. 
+
+3) Character classification
+
+This now is the standard character classification task
+
+** Gettings Lots of Data and Artificial Data
+
+Apparently one of the best ways to get a high performing system is to take low bias algorithm and loads of data. Where to get that data from? -> Artificial Data Synthesis. Creating new data from scratch, and extend existent data. For text data: Use computer fonts to generate images and get synthetic data. Alternatively, use existing labeled data and distort it in reasonable ways. Distortion should be meaningful (i.e. background noise etc.), adding random gaussian noise or similar usually doesn't help well.
+
+Make sure to use a low bias classifier before expending the effort.
+
+** Ceiling Analysis: What part of the Pipeline to work on next?
+
+Have a single number evaluation metric for parts of the system. E.g. Accuracy. Ceiling Analysis intervenes and sets parts of the pipeline manually to 100% accuracy. Then see how the whole system behaves. This way, you see how much effect working on the different parts of the pipeline has on your overall accuracy.

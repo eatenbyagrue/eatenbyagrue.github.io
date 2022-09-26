@@ -1,0 +1,1524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-09-26 Mo 16:55 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes on Coursera, Deep Learning Specification, Neural Networks and Deep Learning</title>
+<meta name="author" content="By Me" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Notes on Coursera, Deep Learning Specification, Neural Networks and Deep Learning</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org5178290">1. Week 1 Introduction to Deep Learning</a>
+<ul>
+<li><a href="#org666a5cc">1.1. Introduction</a></li>
+<li><a href="#org80bc338">1.2. What&rsquo;s a Neural Net?</a></li>
+<li><a href="#orgc2410e9">1.3. Supervised Learning with Neural Networks</a></li>
+<li><a href="#org13e1870">1.4. Why is Deep Learning taking off?</a></li>
+<li><a href="#orgdea5a2e">1.5. In this course:</a></li>
+<li><a href="#orga876243">1.6. Interview with Geoff Hinton</a></li>
+</ul>
+</li>
+<li><a href="#org1d6c602">2. Week 2: Neural Network Basics</a>
+<ul>
+<li><a href="#org2b72460">2.1. Binary Classification</a></li>
+<li><a href="#org921785b">2.2. Logistic regression</a></li>
+<li><a href="#org685fdbd">2.3. Logistic Regression Cost Function</a></li>
+<li><a href="#org7b5f74e">2.4. Gradient Descent</a></li>
+<li><a href="#org1858c10">2.5. Derivatives</a></li>
+<li><a href="#orgdac778e">2.6. Computation Graph</a></li>
+<li><a href="#orge913f81">2.7. Derivatives with a Computation Graph</a></li>
+<li><a href="#org0dc37fa">2.8. Logistic Regression Gradient Descent</a></li>
+<li><a href="#orgdb849dc">2.9. Gradient Descent on \(m\) Examples.</a>
+<ul>
+<li><a href="#orgc9f90a5">2.9.1. Algorithm before Vectorization.</a></li>
+</ul>
+</li>
+<li><a href="#org7721e78">2.10. Vectorization</a></li>
+<li><a href="#org3ddb16a">2.11. Vectorized Logistic Regression</a>
+<ul>
+<li><a href="#orgd2e1a26">2.11.1. Summary Code</a></li>
+</ul>
+</li>
+<li><a href="#org5d0e2ac">2.12. Broadcasting</a></li>
+<li><a href="#org1d90abe">2.13. Python Tips &amp; Tricks</a></li>
+<li><a href="#orgda0677f">2.14. Logistic Regression Cost Function Explanation</a></li>
+<li><a href="#org20b0540">2.15. Interview: Peter Abbee</a></li>
+<li><a href="#org9bc749a">2.16. Notes from the Programming Exercise</a></li>
+</ul>
+</li>
+<li><a href="#org35a0040">3. Week 3: Shallow Neural Nets</a>
+<ul>
+<li><a href="#org954de0c">3.1. Neural Networks Overview</a></li>
+<li><a href="#orgdc60691">3.2. Neural Network Representation</a></li>
+<li><a href="#orge27abf7">3.3. Computing a Neural Network&rsquo;s Output</a></li>
+<li><a href="#org597902b">3.4. Vectorizing Across Multiple Examples</a></li>
+<li><a href="#org52cdb84">3.5. Explanation for Vectorized Implementation</a></li>
+<li><a href="#org82f4490">3.6. Activation functions</a></li>
+<li><a href="#org7c5356c">3.7. Why do we NEED Non-linear Activation Functions?</a></li>
+<li><a href="#orgaf3e9ed">3.8. Derivatives of Activation functions</a>
+<ul>
+<li><a href="#orgc92fce5">3.8.1. Sigmoid</a></li>
+<li><a href="#org1072685">3.8.2. Tanh</a></li>
+<li><a href="#orgcd1c0a2">3.8.3. ReLU</a></li>
+<li><a href="#org1c2d5af">3.8.4. Leaky ReLU</a></li>
+</ul>
+</li>
+<li><a href="#orgde9b49b">3.9. Gradient Descent</a>
+<ul>
+<li><a href="#org7e554bb">3.9.1. Formulas for computing derivatives</a></li>
+</ul>
+</li>
+<li><a href="#org0e4416f">3.10. Backpropagation Intuition</a></li>
+<li><a href="#org97b4ef9">3.11. Random Initialization</a></li>
+<li><a href="#org50789a6">3.12. Interview with Ian Goodfellow</a></li>
+<li><a href="#orgd01ff1e">3.13. Notes from the programming exercise</a></li>
+</ul>
+</li>
+<li><a href="#orgc8934aa">4. Week 4 Deep Neural Networks</a>
+<ul>
+<li><a href="#org59c454b">4.1. Forward Propagation in a Deep Network</a></li>
+<li><a href="#org12e29a5">4.2. Getting Your Matrix Dimensions Right</a>
+<ul>
+<li><a href="#orgfaffa6f">4.2.1. Single Training Example</a></li>
+<li><a href="#org6a9cbf6">4.2.2. Vectorized</a></li>
+</ul>
+</li>
+<li><a href="#org469d1c7">4.3. Why Deep Representations?</a></li>
+<li><a href="#org414f315">4.4. Building Blocks of Neural Networks</a></li>
+<li><a href="#org060de56">4.5. Forward and Backward Propagation</a></li>
+<li><a href="#org533a0e0">4.6. Hyperparameters and Parameters</a>
+<ul>
+<li><a href="#orgd100167">4.6.1. Parameters</a></li>
+<li><a href="#orgc819a6f">4.6.2. Hyperparameters</a></li>
+</ul>
+</li>
+<li><a href="#org8c31663">4.7. What does Deep Learning have to do with the Human Brain?</a></li>
+<li><a href="#org729fadc">4.8. Notes from the Programming Exercise</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org5178290" class="outline-2">
+<h2 id="org5178290"><span class="section-number-2">1.</span> Week 1 Introduction to Deep Learning</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org666a5cc" class="outline-3">
+<h3 id="org666a5cc"><span class="section-number-3">1.1.</span> Introduction</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+AI is the new electricity!!1 
+</p>
+
+<p>
+Overview
+</p>
+<ol class="org-ol">
+<li>Build Neural Networks to recognize cats - 4 weeks</li>
+<li>Improving Deep Neural Networks - 3 weeks</li>
+<li>Structure Machine Learning projects - 2 weeks</li>
+<li>Convolutional Neural Networks for images</li>
+<li>Sequence models for Natural language processing.</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org80bc338" class="outline-3">
+<h3 id="org80bc338"><span class="section-number-3">1.2.</span> What&rsquo;s a Neural Net?</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Standard linear regression problem: housing prices. Instead use ReLu, rectified linear unit, to fit the data.
+</p>
+
+<p>
+\(size x \rightarrow 'neuron' \rightarrow price y\)
+</p>
+
+<p>
+Interestingly, here the output of a neuron gets interpreted with a semantic value. Anywho, the nets are most useful in the supervised learning example.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc2410e9" class="outline-3">
+<h3 id="orgc2410e9"><span class="section-number-3">1.3.</span> Supervised Learning with Neural Networks</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Applications
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Input</th>
+<th scope="col" class="org-left">Output</th>
+<th scope="col" class="org-left">Application</th>
+<th scope="col" class="org-left">Type of NN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Home features</td>
+<td class="org-left">Price</td>
+<td class="org-left">Real Estate</td>
+<td class="org-left">Standard</td>
+</tr>
+
+<tr>
+<td class="org-left">Ad, user info</td>
+<td class="org-left">Click on ad?</td>
+<td class="org-left">Online Advertising</td>
+<td class="org-left">Standard</td>
+</tr>
+
+<tr>
+<td class="org-left">Image</td>
+<td class="org-left">Object</td>
+<td class="org-left">Photo tagging</td>
+<td class="org-left">CNN</td>
+</tr>
+
+<tr>
+<td class="org-left">Audio</td>
+<td class="org-left">Text transcript</td>
+<td class="org-left">Speech recognition</td>
+<td class="org-left">RNN</td>
+</tr>
+
+<tr>
+<td class="org-left">English</td>
+<td class="org-left">Chinese</td>
+<td class="org-left">Machine translation</td>
+<td class="org-left">RNN</td>
+</tr>
+
+<tr>
+<td class="org-left">Image, Radar info</td>
+<td class="org-left">Position of other cars</td>
+<td class="org-left">Autonomous driving</td>
+<td class="org-left">Hybrid</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Supervised Learning uses structured data (mostly labeled). Unstructured Data like raw audio, images, text are much harder to process.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org13e1870" class="outline-3">
+<h3 id="org13e1870"><span class="section-number-3">1.4.</span> Why is Deep Learning taking off?</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Scale drives deep learning progress. If you plot the performance as a function of the amount of labeled data, standard algorithms (SVM, logistic regression) taper off. Small neural nets behave similarly. Larger nets show much better performance with huge amounts of data. So scale means size of network and amount of labeled data. 
+</p>
+
+<p>
+\(m\): Number of training examples.
+\((x,y)\): Labeled data point.
+</p>
+
+<p>
+For small training sets, most algorithm perform very similarly, and then it depends on ability to handcraft features. 
+</p>
+
+<p>
+Scale:
+</p>
+<ul class="org-ul">
+<li>Data</li>
+<li>Computation
+Ability to use larger nets.</li>
+<li>Algorithms 
+e.g. switch from sigmoid to ReLU made gradient descent much faster.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgdea5a2e" class="outline-3">
+<h3 id="orgdea5a2e"><span class="section-number-3">1.5.</span> In this course:</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+See introduction for overview
+</p>
+
+<p>
+Week 1: Introduction
+Week 2: Basics of Neural Network Programming. First Programming Exercise
+Week 3: One hidden layer Neural Networks
+Week 4: Deep Neural Networks
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga876243" class="outline-3">
+<h3 id="orga876243"><span class="section-number-3">1.6.</span> Interview with Geoff Hinton</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Old psychologist view that a concept is just a big bundle of features. The AI view was much more structured, like in a semantic graph. Backprop showed that you could feed a structured view to a neural net, which then generates features, from which it is able to generalize.
+</p>
+
+<p>
+Hinton still fondly remembers Boltzmann machines, which are quite beautiful in his mind. Restricted Boltzmann machines are actually quite effective. 
+</p>
+
+<p>
+Stacking RBMs on top of each other had quite the impact, called Deep Belief Nets. 
+</p>
+
+<p>
+The BRAIN might actually implement back-propagation in some form. Hinton gives an evolutionary argument for it. 
+</p>
+
+<p>
+Capsules are a way to represent rooting by agreement, where features have additional properties. 
+</p>
+
+<p>
+Hinton was all about backprop in his <i>intellectual history</i>. But then he got into unsupervised learning. But what&rsquo;s worked recently is supervised learning. Hinton still believes that unsupervised learning will be crucially important. Variational Autoencoders, Generative Adversarial Nets, could become breakthroughs.  
+</p>
+
+<p>
+Advice: Read the literature, but don&rsquo;t read too much of it. Which seems to go against common wisdom. Read a bit of the literature. Notice something that everybody&rsquo;s doing wrong, and do it right. There is no point not trusting your intuitions. Never stop programming! Don&rsquo;t be to worried if other&rsquo;s say is nonsense. For new grad students: Find an adviser who was similar beliefs to you. Do a PhD or join a company?  
+</p>
+
+<p>
+In the early days, von neumann and turing didn&rsquo;t believe in symbolic AI! Then symbolic AI took over. Now, there is a different view where at thought is just some neural activation. the symbolic guys made a big mistake. Input is a string of words, output is a string of words, what comes in between must then also be a string of words. Wrong! LoT is a silly idea. A lot of people still think thoughts have to be symbolic expressions.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1d6c602" class="outline-2">
+<h2 id="org1d6c602"><span class="section-number-2">2.</span> Week 2: Neural Network Basics</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org2b72460" class="outline-3">
+<h3 id="org2b72460"><span class="section-number-3">2.1.</span> Binary Classification</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Couple of techniques very important. 
+</p>
+
+<ul class="org-ul">
+<li>Not use for-loops, instead vectorization.</li>
+<li>organize computation in forward propagation step + backward propagation step.</li>
+</ul>
+
+<p>
+Here with logistic regression to start out to binary classify images. Assume a 64 by 64 pixel image, with 3 256 color channels, such that \(n = 64\times64\times3 = 12288\) features. Further notation:
+</p>
+
+<p>
+\[(x,y), x\in \mathbb{R}^{n_x}, y \in \{0,1\}\]
+\(m\) training examples: \(\{(x^{(1)},y^{(1)}, \dots, (x^{(m)},y^{(m)})\}\)
+</p>
+
+<p>
+\(X\) is a \(n_x \times m\) matrix, \(Y\) is a \(1 \times m\) matrix. Such that \(x^{(i)}\) is a <b>column</b> of \(X\). This apparently makes some computations easier to implement.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org921785b" class="outline-3">
+<h3 id="org921785b"><span class="section-number-3">2.2.</span> Logistic regression</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Given \(x\), want \(\hat{y} = P(y=1|x)\). \(x \in \mathbb{r}^n\), \(0 \leq \hat{y} \leq 1\).
+</p>
+
+<p>
+Parameters: \(w \in \mathbb{R}^n, b\in \mathbb{R}\).
+</p>
+
+<p>
+Output \(\hat{y} = \sigma(w^Tx+b)\).
+</p>
+
+<p>
+\(\sigma(z) = \frac{1}{1 + e^{-z}}\)
+</p>
+
+<p>
+If \(z\) large then \(\sigma(z)\) tends to 1. If \(z\) large negative then \(\sigma(z)\) tends to 0. If \(z\) tends to 0 then \(\sigma(z)\) tends to 0.5.
+</p>
+
+<p>
+In the previous course, \(b\) was called \(\theta_0\), and \(\theta_1,\dots,theta_n\) is called \(w\). It&rsquo;s more helpful building neural nets this way.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org685fdbd" class="outline-3">
+<h3 id="org685fdbd"><span class="section-number-3">2.3.</span> Logistic Regression Cost Function</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Given \(\{(x^{(1)},y^{(1)}, \dots, (x^{(m)},y^{(m)})\}\), we want \(\hat{y}^{(i)} \sim y^{(i)}\) 
+</p>
+
+<p>
+Loss (error) function \(\mathcal{L}(\hat{y},y)\) measures how good our output \(\hat{y}\) is when the true label is \(y\).
+</p>
+
+<p>
+\[\mathcal{L}(\hat{y},y) = -(y \log \hat{y}) + (1-y) log(1-\hat{y})\] 
+</p>
+
+<p>
+Cost function measures the entire training set:
+</p>
+
+<p>
+\[J(w,b) = \frac{1}{m} \sum_{i=1}^m\mathcal{L}(\hat{y}^{(i)},y^{(i)})\]
+</p>
+
+<p>
+Logistic regression can be viewed as a very small neural network!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7b5f74e" class="outline-3">
+<h3 id="org7b5f74e"><span class="section-number-3">2.4.</span> Gradient Descent</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+The Cost functions is the average of the Lost function over all training examples. Now, find \(w,b\) such that the surface \(J(w,b)\) is minimal. \(J\) is a convex function guarantees finding the global optimum.
+</p>
+
+<p>
+Gradient descent takes steps towards the optimum in the direction of the gradient. 
+Repeat: 
+\[ w := w - \alpha \frac{\partial J(w,b)}{\partial w} = w - \alpha dw\]. 
+\[ b := b - \alpha \frac{\partial J(w,b)}{\partial b} = b - \alpha db\].
+This always goes down the gradient towards the minimum. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1858c10" class="outline-3">
+<h3 id="org1858c10"><span class="section-number-3">2.5.</span> Derivatives</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Derivative just means slope! Well&#x2026; Read \(\frac{df(a)}{da}\) as the slope of \(f(a)\) at \(a\).
+</p>
+
+<p>
+The rest is really basic derivatives 101. Remember that for \(f(a) = log_e(a)\), \(\frac{df(a)}{f(a)} = frac{1}{a}\).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdac778e" class="outline-3">
+<h3 id="orgdac778e"><span class="section-number-3">2.6.</span> Computation Graph</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+Explains why the computation is divided into forward/backward pass. 
+</p>
+
+<p>
+Organizes computation in the left-to-right direction for computing the cost function. backward propagation yields the derivative.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge913f81" class="outline-3">
+<h3 id="orge913f81"><span class="section-number-3">2.7.</span> Derivatives with a Computation Graph</h3>
+<div class="outline-text-3" id="text-2-7">
+<p>
+Suppose \(J(a,b,c) = 3(a + bc)\). Graph: \(u=bc, v=a+u\). Then: \(\frac{dJ}{da} = \frac{dJ}{dv}\frac{dv}{da} = 3 \times 1 = 1\). That&rsquo;s just the chain rule. 
+</p>
+
+<p>
+\[\frac{dJ}{du} = \frac{dJ}{dv} = 3 \times 1\]. 
+\[\frac{dJ}{db} = \frac{dJ}{du} \frac{du}{db} = \frac{dJ}{dv}\frac{dv}{du} \frac{du}{db} = 3 \times 1 \times c\]. 
+</p>
+
+<p>
+This is a right-to-left computation to determine the derivative.
+</p>
+
+<p>
+As a coding convention, \(\frac{dJ}{da}\) is written as <code>da</code>, and similar.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0dc37fa" class="outline-3">
+<h3 id="org0dc37fa"><span class="section-number-3">2.8.</span> Logistic Regression Gradient Descent</h3>
+<div class="outline-text-3" id="text-2-8">
+<p>
+Using a computation graph, which is a bit of an overkill for logistic regression, but useful later. 
+</p>
+
+<p>
+\[x_1,w_1,x_2,w_2,b \rightarrow z = w_1x_1 + w_2x_2 + b \rightarrow a = \sigma(z) \rightarrow \mathcal{L}(a,y)\]
+</p>
+
+<p>
+Backwards computation. We want to get the derivative of \(\mathcal{L}\) by the weights \(w_1,w_2\).
+</p>
+
+<p>
+\[\frac{d\mathcal{L}(a,y)}{da} = \frac{-y}{a} + \frac{1-y}{1-a},\] 
+</p>
+
+<p>
+\[\frac{da}{dz} = a(a-1),\]
+</p>
+
+<p>
+\[\frac{d\mathcal{L}}{dz} = \frac{d\mathcal{L}}{da}\frac{da}{dz} = a - y,\]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{L}}{\partial w_1} = x_1 \frac{d\mathcal{L}}{dz},\] \(w_2\) analogously.
+</p>
+
+<p>
+This is for a single training example, but we need the cost function for all examples. 
+</p>
+
+<p>
+Note. The use of \(\partial\) / \(d\) seems not quite consistent.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdb849dc" class="outline-3">
+<h3 id="orgdb849dc"><span class="section-number-3">2.9.</span> Gradient Descent on \(m\) Examples.</h3>
+<div class="outline-text-3" id="text-2-9">
+<p>
+\[J(w,b) = \frac{1}{m} = \sum_{i=1}{m} \mathcal{L}(a^{(i)},y^{(i)})\], and then
+</p>
+
+<p>
+\[\frac{\partial}{\partial w_1} J(w,b) = \frac{1}{m} \sum_{i=1}^m \frac{\partial}{\partial w_1} \mathcal{L}(a^{(i)},y^{(i)})\].
+</p>
+</div>
+
+<div id="outline-container-orgc9f90a5" class="outline-4">
+<h4 id="orgc9f90a5"><span class="section-number-4">2.9.1.</span> Algorithm before Vectorization.</h4>
+<div class="outline-text-4" id="text-2-9-1">
+<p>
+In the following, \(a^{(i)}\) is written as <code>a_i</code> etc.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">J</span>=<span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #dcaeea;">dw_1</span>=<span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #dcaeea;">dw_2</span> =<span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #dcaeea;">db</span>=<span style="color: #da8548; font-weight: bold;">0</span>
+<span style="color: #51afef;">for</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">1</span> to m
+  <span style="color: #dcaeea;">z_i</span> = w^T*x_i + b
+  <span style="color: #dcaeea;">a_i</span> = sigma(z_i)
+  <span style="color: #dcaeea;">Jt</span> = -[y_i * log(a_i) + (<span style="color: #da8548; font-weight: bold;">1</span> - y_i)*log(<span style="color: #da8548; font-weight: bold;">1</span>-a_i)]
+  <span style="color: #dcaeea;">d_z_i</span> = a_i - y_i
+  <span style="color: #dcaeea;">dw_1</span> += x_i_1 dz_i
+  <span style="color: #dcaeea;">dw_2</span> += x_i_2 dz_i
+  ...
+  <span style="color: #dcaeea;">db</span> += dz_i
+<span style="color: #dcaeea;">J</span> /= m
+<span style="color: #dcaeea;">dw_1</span> /= m; <span style="color: #dcaeea;">dw_2</span> /= m; <span style="color: #dcaeea;">db</span>/=m.
+<span style="color: #dcaeea;">w_1</span> -= alpha*dw_1
+<span style="color: #dcaeea;">w_2</span> -= alpha*dw_2
+<span style="color: #dcaeea;">b</span> -= alpha*db  
+</pre>
+</div>
+
+<p>
+Note that <code>dw_1</code> is used cumulatively over all training examples. This code is comparatively slow, we should be using vectorization instead.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7721e78" class="outline-3">
+<h3 id="org7721e78"><span class="section-number-3">2.10.</span> Vectorization</h3>
+<div class="outline-text-3" id="text-2-10">
+<p>
+&ldquo;the art of getting rid of explicit for loops in your code&rdquo; - makes use of optimization techniques not available otherwise.
+</p>
+
+<p>
+What is it?
+</p>
+
+<p>
+\(z = w^Tx + b\), where \(w,x\) are column vectors.
+</p>
+
+<p>
+Non-vectorial:
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">z</span> = <span style="color: #da8548; font-weight: bold;">0</span>
+<span style="color: #51afef;">for</span> i <span style="color: #51afef;">in</span> <span style="color: #c678dd;">range</span>(n_x):
+  <span style="color: #dcaeea;">z</span> += w[i] * x[i]
+<span style="color: #dcaeea;">z</span> += b
+</pre>
+</div>
+
+<p>
+Vectorized:
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">z</span> = np.dot(w,x) + b
+</pre>
+</div>
+
+<p>
+The second version is <i>wildly</i> faster.
+</p>
+
+<p>
+Is this because of the GPU? Already on the CPU, it&rsquo;s much faster because of parallelization. 
+</p>
+
+<p>
+Rule of thumb: Whenever possible, use vectorization. 
+</p>
+
+<p>
+\[u = Av\]
+\[u_i = \sum_j A_{ij}v_j\]
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">u</span> = np.zeros(n,<span style="color: #da8548; font-weight: bold;">1</span>)
+<span style="color: #51afef;">for</span> i ...
+  <span style="color: #51afef;">for</span> j ...
+    <span style="color: #dcaeea;">u</span>[<span style="color: #dcaeea;">i</span>] =+ A[i][j] * v[j]
+</pre>
+</div>
+
+<p>
+vs. 
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">u</span> = np.dot(A,v)
+</pre>
+</div>
+
+<p>
+Element-wise operations on vector:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">u</span> = np.exp(v)
+<span style="color: #dcaeea;">u</span> = np.log(v)
+<span style="color: #dcaeea;">u</span> = v**<span style="color: #da8548; font-weight: bold;">2</span>
+<span style="color: #dcaeea;">u</span> = <span style="color: #da8548; font-weight: bold;">1</span>/v
+</pre>
+</div>
+
+<p>
+What&rsquo;s the logistic regression algorithm vectorized?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">J</span>=<span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #dcaeea;">db</span>=<span style="color: #da8548; font-weight: bold;">0</span>
+<span style="color: #dcaeea;">dw</span> = np.zeros((n__x,<span style="color: #da8548; font-weight: bold;">1</span>))
+<span style="color: #51afef;">for</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">1</span> to m
+  <span style="color: #dcaeea;">z_i</span> = w^T*x_i + b
+  <span style="color: #dcaeea;">a_i</span> = sigma(z_i)
+  <span style="color: #dcaeea;">Jt</span> = -[y_i * log(a_i) + (<span style="color: #da8548; font-weight: bold;">1</span> - y_i)*log(<span style="color: #da8548; font-weight: bold;">1</span>-a_i)]
+  <span style="color: #dcaeea;">d_z_i</span> = a_i - y_i
+  <span style="color: #dcaeea;">dw</span> += x_i*dz_i
+  <span style="color: #dcaeea;">db</span> += dz_i
+<span style="color: #dcaeea;">J</span> /= m; <span style="color: #dcaeea;">dw</span> /= m; <span style="color: #dcaeea;">db</span>/=m
+<span style="color: #dcaeea;">w_1</span> -= alpha*dw_1
+<span style="color: #dcaeea;">w_2</span> -= alpha*dw_2
+<span style="color: #dcaeea;">b</span> -= alpha*db  
+</pre>
+</div>
+
+<p>
+But it can be even more vectorized! Why did I write up the above then.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3ddb16a" class="outline-3">
+<h3 id="org3ddb16a"><span class="section-number-3">2.11.</span> Vectorized Logistic Regression</h3>
+<div class="outline-text-3" id="text-2-11">
+<p>
+Forward Pass: 
+</p>
+
+<p>
+\[z^{(i)} = w^Tx^{(i}) + b\]
+\[a^{(i)} = \sigma(z^{(1)}\]
+</p>
+
+<p>
+Strategy: Construct a row vector containing all \[z's\].
+</p>
+
+<p>
+\[[z^{(1)},\dots,z^{(m)}] = w^T X + [b, \dots, b] = [w^Tx^{(1)} + b, \dots, w^Tx^{(n)} + b].\]
+</p>
+
+<p>
+Remember, \(X\) is a matrix with the training examples as <b>columns</b>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">z</span> = np.dot(w.T,x) + b
+</pre>
+</div>
+
+<p>
+\(b\) gets automatically broadcasted by python to a vector.
+</p>
+
+<p>
+Similarly for \[A = [a^{(1)}, \dots, a^{(m)}] = \sigma(z).\] See more in programming exercise.
+</p>
+
+<p>
+Now on to the gradient. This is notationally quite sloppy, as Andrews Ng mixes mathematical and python notation freely without apparent consistency.
+</p>
+
+<p>
+\[dz^{(1)} = a^{(i)} - y^{(i)}\]
+\[dZ = [dz^{(1)}, dots, dz^{(m)}]\]
+\[A = [a^{(1)},\dots,a^{(m)}], Y=[y^{(1)},\dots,y^{(m)}]\]
+\[dZ = A-Y = [a^{(1)}-y^{(1)},\dots,a^{(m)} - y^{(m)}]\]
+</p>
+
+<p>
+\[db = \frac{1}{m} \sum^m_{i=1}dz^{(i)}\]
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #da8548; font-weight: bold;">1</span>/m * np.<span style="color: #c678dd;">sum</span>(dZ)
+</pre>
+</div>
+<p>
+\[dw = \frac{1}{m}XdZ^T\]
+Python code in the exercise.
+</p>
+</div>
+
+<div id="outline-container-orgd2e1a26" class="outline-4">
+<h4 id="orgd2e1a26"><span class="section-number-4">2.11.1.</span> Summary Code</h4>
+<div class="outline-text-4" id="text-2-11-1">
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">Z</span> = np.dot(w.T,X) + b
+<span style="color: #dcaeea;">A</span> = sigma(Z)
+<span style="color: #dcaeea;">dZ</span> = A-Y
+<span style="color: #dcaeea;">dw</span> = <span style="color: #da8548; font-weight: bold;">1</span>/m XdZ^T (=<span style="color: #da8548; font-weight: bold;">1</span>/m * np.dot(X,dZ.T)
+db = <span style="color: #da8548; font-weight: bold;">1</span>/m * np.<span style="color: #c678dd;">sum</span>(dZ)
+w-= alpha*dw
+b-= alpha*db
+</pre>
+</div>
+
+<p>
+Note: Write dimensions to each variable to be clear. 
+</p>
+
+<p>
+By the way. you still need a for-loop to go through all gradient descent steps.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5d0e2ac" class="outline-3">
+<h3 id="org5d0e2ac"><span class="section-number-3">2.12.</span> Broadcasting</h3>
+<div class="outline-text-3" id="text-2-12">
+<p>
+Let \(A\) be a \(3\times 4\) matrix. How to calculate the percentages of each attribute? Note again that the data points are in the columns. 
+</p>
+
+<p>
+<code>A.sum(axis=0)</code> sums the columns. 
+</p>
+
+<p>
+<code>percentages = 100*A/cal.reshape(1,4)</code> gives the percentages.
+</p>
+
+<p>
+<code>axis=0</code> sums the columns, result is a row vector. <code>axis=1</code> sums the columns, result is a column vector.
+</p>
+
+<p>
+\((m,n)\) matrix \(+-*/ (1,n)\) vector: python expands the vector to a \((m,n)\) matrix and copies the rows. 
+</p>
+
+<p>
+\((m,n)\) matrix \(+-*/ (m,1)\) vector: python expands the vector to an \((m,n)\) matrix copying the columns.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1d90abe" class="outline-3">
+<h3 id="org1d90abe"><span class="section-number-3">2.13.</span> Python Tips &amp; Tricks</h3>
+<div class="outline-text-3" id="text-2-13">
+<p>
+Some bugs are really strange! Don&rsquo;t use data structures, where the shape is <code>(5,)</code> [rank 1 array]. You get this from <code>np.random.randn(5,)</code>. Use instead: <code>np.random.randn(5,1)</code> or <code>...(1,5)</code>. Commit to either a columns or row vector!
+</p>
+
+<p>
+Test by <code>assert(a.shape == (5,1))</code>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgda0677f" class="outline-3">
+<h3 id="orgda0677f"><span class="section-number-3">2.14.</span> Logistic Regression Cost Function Explanation</h3>
+<div class="outline-text-3" id="text-2-14">
+<p>
+If \(y = 1: p(y|x) = \hat{y}\).
+If \(y = 0: p(y|x) = 1 - \hat{h}\).
+</p>
+
+<p>
+\[p(y|x) = \hat{y}^y(1-\hat{y})^{(1-y)}\]
+</p>
+
+<p>
+\[\log{p(y|x)} = y\log(\hat{y}) + (1-y)\log{(1-\hat{y})}\]
+</p>
+
+<p>
+Assuming iid, the same reasoning works for the total cost function. We&rsquo;re basically using maximum likelihood estimation minimizing the cost function.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org20b0540" class="outline-3">
+<h3 id="org20b0540"><span class="section-number-3">2.15.</span> Interview: Peter Abbee</h3>
+<div class="outline-text-3" id="text-2-15">
+<p>
+Robotics and Machine Learning Researcher. Supervised Learning is an input-output assignment problem. Reinforcement Learning is different. AI changed a bit. John McCarthy had a very different approach. I learned to make sure to see the connection of all the math to what you&rsquo;re actually applying it to. Now is a really good time to do AI. SO many possibilities. Use self study. Check out Andrew Karpathy&rsquo;s Deep Learning course. Berkely has a course on Deep Reinforcement Learning. Do a PhD or get a job? Has to do with how much mentoring you can get. <a href="https://www.youtube.com/playlist?list=PLkFD6_40KJIwhWJpGazJ9VSj9CFMkb79A">https://www.youtube.com/playlist?list=PLkFD6_40KJIwhWJpGazJ9VSj9CFMkb79A</a>
+It would be nice if reinforcement learning could transfer their learned configurations to other applications.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9bc749a" class="outline-3">
+<h3 id="org9bc749a"><span class="section-number-3">2.16.</span> Notes from the Programming Exercise</h3>
+<div class="outline-text-3" id="text-2-16">
+<p>
+<b><b>What you need to remember:</b></b>
+</p>
+
+<p>
+Common steps for pre-processing a new dataset are:
+</p>
+<ul class="org-ul">
+<li>Figure out the dimensions and shapes of the problem (m<sub>train</sub>, m<sub>test</sub>, num<sub>px</sub>, &#x2026;)</li>
+<li>Reshape the datasets such that each example is now a vector of size (num<sub>px</sub> \* num<sub>px</sub> \* 3, 1)</li>
+<li>&ldquo;Standardize&rdquo; the data</li>
+</ul>
+
+<p>
+A trick when you want to flatten a matrix X of shape (a,b,c,d) to a matrix X<sub>flatten</sub> of shape (b∗∗c∗∗d, a) is to use:
+<code>X_flatten = X.reshape(X.shape[0], -1).T      # X.T is the transpose of X</code>
+</p>
+
+<p>
+The main steps for building a Neural Network are:
+</p>
+<ol class="org-ol">
+<li>Define the model structure (such as number of input features)</li>
+<li>Initialize the model&rsquo;s parameters</li>
+<li>Loop:
+<ul class="org-ul">
+<li>Calculate current loss (forward propagation)</li>
+<li>Calculate current gradient (backward propagation)</li>
+<li>Update parameters (gradient descent)</li>
+</ul></li>
+</ol>
+
+<p>
+Now that your parameters are initialized, you can do the &ldquo;forward&rdquo; and &ldquo;backward&rdquo; propagation steps for learning the parameters.
+</p>
+
+<p>
+<b><b>Exercise:</b></b> Implement a function `propagate()` that computes the cost function and its gradient.
+</p>
+
+<p>
+<b><b>Hints</b></b>:
+</p>
+
+<p>
+Forward Propagation:
+</p>
+<ul class="org-ul">
+<li>You get X</li>
+<li>You compute \(A = \sigma(w^T X + b) = (a^{(1)}, a^{(2)}, ..., a^{(m-1)}, a^{(m)})\)</li>
+<li>You calculate the cost function: \(J = -\frac{1}{m}\sum_{i=1}^{m}y^{(i)}\log(a^{(i)})+(1-y^{(i)})\log(1-a^{(i)})\)</li>
+</ul>
+
+<p>
+Here are the two formulas you will be using: 
+</p>
+
+<p>
+\[ \frac{\partial J}{\partial w} = \frac{1}{m}X(A-Y)^T\tag{7}\]
+\[ \frac{\partial J}{\partial b} = \frac{1}{m} \sum_{i=1}^m (a^{(i)}-y^{(i)})\tag{8}\]
+</p>
+
+<p>
+<b><b>What to remember from this assignment:</b></b>
+</p>
+<ol class="org-ol">
+<li>Preprocessing the dataset is important.</li>
+<li>You implemented each function separately: initialize(), propagate(), optimize(). Then you built a model().</li>
+<li>Tuning the learning rate (which is an example of a &ldquo;hyperparameter&rdquo;) can make a big difference to the algorithm. You will see more examples of this later in this course!</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-org35a0040" class="outline-2">
+<h2 id="org35a0040"><span class="section-number-2">3.</span> Week 3: Shallow Neural Nets</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org954de0c" class="outline-3">
+<h3 id="org954de0c"><span class="section-number-3">3.1.</span> Neural Networks Overview</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Last week: Logistic Regression with computation graph. Neural nets are more of the same! The computation graph looks <i>very</i> similar.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdc60691" class="outline-3">
+<h3 id="orgdc60691"><span class="section-number-3">3.2.</span> Neural Network Representation</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Single Hidden Layer Network. Input Layer (with three units), Hidden Layer (with 4 units), Output Layer (one unit). You know the drill. Hidden as in not seen in the training set. 
+</p>
+
+<p>
+\(a^{[0]} = x\) are the activations of the input.
+\(a^{[1]}\) with \(a^{[1]}_i\) enumerating the activations of node \(i\) in layer 1. 
+\(a^{[2]} = \hat{y}\) is the activation of the output node (if there is only one).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge27abf7" class="outline-3">
+<h3 id="orge27abf7"><span class="section-number-3">3.3.</span> Computing a Neural Network&rsquo;s Output</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Each node kinda does logistic regression on its inputs (provided we use a sigmoid activation function). 
+</p>
+
+<p>
+\[z^{[1]} = w^{[1]T}_1 x + b_1^{[1]}\] 
+\[ a^{[1]}_1 = \sigma(z_1^{[1]})\]
+</p>
+
+<p>
+For four hidden layer units, we run logistic regression four times and have their parameters \(w^{[1]}_i\) in a matrix \(W^{[1]}\). Then: 
+</p>
+
+<p>
+\[z^{[1]} = W^{[1]}x + b^{[1]}\] 
+\[(4,1) = (4,3)\times(3,1) + (4,1)\]
+\[a^{[1]} = \sigma(z^{[1]})\] 
+\[z^{[2]} = W^{[2]}x + b^{[2]}\] 
+\[(1,1) = (1,4)\times(4,1) + (1,1)\]
+\[a^{[2]} = \sigma(z^{[2]})\] 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org597902b" class="outline-3">
+<h3 id="org597902b"><span class="section-number-3">3.4.</span> Vectorizing Across Multiple Examples</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+\(a^{[2](i)}\) refers to the only activation in layer 2 for example \(i\).
+</p>
+
+<p>
+\(X\) is an \((n_x,m)\) dimensional matrix.
+</p>
+
+<p>
+\[Z^{[1]} = W^{[1]}X + b^{[1]}\]
+\[A^{[1]} = \sigma(z^{[1]})\]
+\[Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]}\]
+\[A^{[2]} = \sigma(Z^{[2]})\]
+</p>
+
+<p>
+Note that these sets of equations look like following a pattern, especially with \(X = A^{[0]}\). More on this lat&rsquo;r.
+</p>
+
+<p>
+\[Z^{[1]} = \begin{pmatrix} | & \dots & | \\ z^{[1](1)} & \dots & z^{[1](m)} \\ | & \dots & | \\ \end{pmatrix}\]
+</p>
+
+<p>
+\(dim(Z^{[1]}) = dim(A^{[1]}) = (n_1, m)\), where \(n_1\) is the number of nodes in layer 1.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org52cdb84" class="outline-3">
+<h3 id="org52cdb84"><span class="section-number-3">3.5.</span> Explanation for Vectorized Implementation</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+\[z^{[1](1)} = W^{[1]}x^{(1)} + b^{[1]}\] 
+</p>
+
+<p>
+gives you a column vector. Similarly for \(z^{[1](2)}\) etc.
+</p>
+
+<p>
+<code>~</code> The explanation is almost good, but misses crucial points to be helpful, like recourse to the network <code>~</code>
+</p>
+
+<p>
+So far so good. Let&rsquo;s look at more activation functions. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org82f4490" class="outline-3">
+<h3 id="org82f4490"><span class="section-number-3">3.6.</span> Activation functions</h3>
+<div class="outline-text-3" id="text-3-6">
+<ul class="org-ul">
+<li>sigmoid(z)</li>
+<li>tanh(z) is a shifted (and stretched) version of sigmoid.</li>
+</ul>
+
+<p>
+Ng never uses the sigmoid activation function anymore. Except! For the output layer sometimes. It is OK to mix and match, if the forward and backward propagations are updated accordingly.
+</p>
+
+<ul class="org-ul">
+<li>ReLu: \(a = max(0,z)\). Increasingly the default choice for hidden layers. Derivative is 0 or 1. Easypeasy.</li>
+<li>Leaky ReLU: \(a = max(0.01z,z)\)</li>
+</ul>
+
+<p>
+tanh is strictly superior than sigmoid for hidden layers. Default choice is ReLU or leaky ReLU, though.
+</p>
+
+<p>
+In general, you often have a lot of choices. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c5356c" class="outline-3">
+<h3 id="org7c5356c"><span class="section-number-3">3.7.</span> Why do we NEED Non-linear Activation Functions?</h3>
+<div class="outline-text-3" id="text-3-7">
+<p>
+Suppose an identity (=linear) activation function. Then the model is computing \(\hat{y}\) as a linear function of your inputs. This is easily seen from the algebra. Then, how matter how many layers you have, you are always computing a linear activation function! The model is then no more expressive than standard logistic regression. Sometimes it is OK to use linear activation functions in the output layer, namely is \(\hat{y} \in \mathbb{R}\).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaf3e9ed" class="outline-3">
+<h3 id="orgaf3e9ed"><span class="section-number-3">3.8.</span> Derivatives of Activation functions</h3>
+<div class="outline-text-3" id="text-3-8">
+</div>
+<div id="outline-container-orgc92fce5" class="outline-4">
+<h4 id="orgc92fce5"><span class="section-number-4">3.8.1.</span> Sigmoid</h4>
+<div class="outline-text-4" id="text-3-8-1">
+<p>
+\[g(z) = \frac{1}{1+\exp{-z}}\]
+\[\frac{d}{dz}g(z) = g'(z) = g(z)(1-g(z))\].
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1072685" class="outline-4">
+<h4 id="org1072685"><span class="section-number-4">3.8.2.</span> Tanh</h4>
+<div class="outline-text-4" id="text-3-8-2">
+<p>
+\[g(z) = tanh(z) = \frac{\exp{z} - \exp{z}}{\exp{z} + \exp{-z}}\]
+\[g'(z) = 1 - tanh(z)^2\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcd1c0a2" class="outline-4">
+<h4 id="orgcd1c0a2"><span class="section-number-4">3.8.3.</span> ReLU</h4>
+<div class="outline-text-4" id="text-3-8-3">
+<p>
+\[g(z) = max(0,z)\]
+\[g'(z) = \begin{cases}0 & \text{ if } z < 0 \\ 1 & \text{ if } z \geq 0\end{cases}\]
+</p>
+
+<p>
+technically undefined for 0 but in proactive we cheat.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1c2d5af" class="outline-4">
+<h4 id="org1c2d5af"><span class="section-number-4">3.8.4.</span> Leaky ReLU</h4>
+<div class="outline-text-4" id="text-3-8-4">
+<p>
+\[g(z) = max(0.01,z)\]
+\[g'(z) = \begin{cases}0.01 & \text{ if } z < 0 \\ 1 & \text{ if } z \geq 0\end{cases}\]
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgde9b49b" class="outline-3">
+<h3 id="orgde9b49b"><span class="section-number-3">3.9.</span> Gradient Descent</h3>
+<div class="outline-text-3" id="text-3-9">
+<p>
+Single hidden layer NN. 
+Parameters with dimensions: 
+</p>
+
+<p>
+\[W^{[1]}, b^{[1]}, W^{[2]},  b^{[2]}, \]
+\[(n^{[1]},n^{[0]}),(n^{[1]},1),(n^{[2]},n^{[1]}),(n^{[2]},1),\]
+where \(n_x = n^{[0]}, n^{[1]}, n^{[2]} = 1\).
+</p>
+
+<p>
+Cost function: \[J(W^{[1]}, b^{[1]}, W^{[2]}, b{[2]}) = \frac{1}{m} \sum^n_{i=1} \mathcal{L}(\hat{y},y),\] where \(\hat{y} = a^{[2]}\). 
+</p>
+</div>
+
+<div id="outline-container-org7e554bb" class="outline-4">
+<h4 id="org7e554bb"><span class="section-number-4">3.9.1.</span> Formulas for computing derivatives</h4>
+<div class="outline-text-4" id="text-3-9-1">
+<p>
+Forward propagation
+</p>
+
+<p>
+\[Z^{[i]} = W^{[1]}X + b^{[1]}\]
+\[A^{[1]} = g(z^{[1]})\]
+\[Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]}\]
+\[A^{[2]} = \sigma(Z^{[2]})\]
+</p>
+
+<p>
+Backpropagation:
+</p>
+
+<p>
+\[dZ^{[2]} = A^{[2]} - Y\]
+\(Y\) is a \((1,m)\) matrix.
+\[dW^{[2]} = \frac{1}{m}dZ^{[2]}A^{[1]T}\]
+\[db^{[2]} = \frac{1}{m} \sum_{i=1}^m dZ^{[2](i)} \]
+Here is the line of code to calculate the last formula above:
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #dcaeea;">db2</span> = <span style="color: #da8548; font-weight: bold;">1</span>/m * np.<span style="color: #c678dd;">sum</span>(dZ2, axis = <span style="color: #da8548; font-weight: bold;">1</span>, keepdims = <span style="color: #a9a1e1;">True</span>)
+</pre>
+</div>
+<p>
+\[dZ^{[1]} = W^{[2]T}dZ^{[2]} * \frac{d}{dz}g^{[1]}(Z^{[1]})\]
+with dimensions \((n^{[1]},m)\).
+\[dW^{[1]} = \frac{1}{m}dZ^{[1]}X^T\]
+\[db^{[1]} = \frac{1}{m} \sum_{i=1}^m dZ^{[1](i)} \]
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org0e4416f" class="outline-3">
+<h3 id="org0e4416f"><span class="section-number-3">3.10.</span> Backpropagation Intuition</h3>
+<div class="outline-text-3" id="text-3-10">
+<p>
+Look at the computation graph. (not pictured here)
+</p>
+
+<p>
+\[dim(W^{[2]})  =(n^{[2]},n^{[1]})\]
+\[dim(Z^{[2]})  =dim(dZ^{[2]}) = (n^{[2]},1)\]
+\[dim(Z^{[1]})  =dim(dZ^{[1]}) = (n^{[1]},1)\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org97b4ef9" class="outline-3">
+<h3 id="org97b4ef9"><span class="section-number-3">3.11.</span> Random Initialization</h3>
+<div class="outline-text-3" id="text-3-11">
+<p>
+Initializing the weights to 0 won&rsquo;t work. What happens is that the nodes will be computing the same function, and thus never deviate in the learning process. The result is a logistic regression, basically, instead of a neural net.
+</p>
+
+<p>
+Instead, use random initialization. Use very small values (rand times 0.01 for shallow networks). If the weights are too large, gradient descent might be hindered, especially with tanh or sigmoid activation functions.
+</p>
+</div>
+</div>
+<div id="outline-container-org50789a6" class="outline-3">
+<h3 id="org50789a6"><span class="section-number-3">3.12.</span> Interview with Ian Goodfellow</h3>
+<div class="outline-text-3" id="text-3-12">
+<p>
+Good way to break into the industry is to have a github account with useful projects on them. While learning, have a project! 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd01ff1e" class="outline-3">
+<h3 id="orgd01ff1e"><span class="section-number-3">3.13.</span> Notes from the programming exercise</h3>
+<div class="outline-text-3" id="text-3-13">
+<p>
+Backpropagation can be summarized as (commented out in the source code, the notation shown there is simpler):
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } = \frac{1}{m} (a^{[2](i)} - y^{(i)})\]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} }{ \partial W_2 } = \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } a^{[1] (i) T}\]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} }{ \partial b_2 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)}}}\]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} } =  W_2^T \frac{\partial \mathcal{J} }{ \partial z_{2}^{(i)} } * ( 1 - a^{[1] (i) 2}) \]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} }{ \partial W_1 } = \frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)} }  X^T \]
+</p>
+
+<p>
+\[\frac{\partial \mathcal{J} _i }{ \partial b_1 } = \sum_i{\frac{\partial \mathcal{J} }{ \partial z_{1}^{(i)}}}\]
+</p>
+
+<ul class="org-ul">
+<li>Note that \(*\) denotes elementwise multiplication.</li>
+<li>The notation you will use is common in deep learning coding:
+<ul class="org-ul">
+<li>dW1 = \(\frac{\partial \mathcal{J} }{ \partial W_1 }\)</li>
+<li>db1 = \(\frac{\partial \mathcal{J} }{ \partial b_1 }\)</li>
+<li>dW2 = \(\frac{\partial \mathcal{J} }{ \partial W_2 }\)</li>
+<li>db2 = \(\frac{\partial \mathcal{J} }{ \partial b_2 }\)</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc8934aa" class="outline-2">
+<h2 id="orgc8934aa"><span class="section-number-2">4.</span> Week 4 Deep Neural Networks</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+What&rsquo;s a deep Neural Net? Well, with more than one hidden layer! 
+</p>
+
+<p>
+Notation
+</p>
+<ul class="org-ul">
+<li>\(L:\) number of layers</li>
+<li>\(n^{[l]}:\) number of units in layer \(l\)</li>
+<li>\(a^{[l]}:\) activations in layer \(l\)</li>
+<li>\(a^{[l]} = g^{[l]}(z{[l]})\)</li>
+<li>\(W^{[l]}:\) Weights for \(z^{[l]}\).</li>
+</ul>
+</div>
+
+<div id="outline-container-org59c454b" class="outline-3">
+<h3 id="org59c454b"><span class="section-number-3">4.1.</span> Forward Propagation in a Deep Network</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+First for a single training example, \(a^{[0]} = x\).
+</p>
+
+<p>
+\[z^{[1]} = W^{[1]}a^{[0]} + b^{[1]}\]
+\[a^{[1]} = g{[1]}(z^{[1]})\]
+\[z^{[2]} = W^{[2]}a^{[1]} + b^{[2]}\]
+\[a^{[2]} = g{[2]}(z^{[2]})\]
+\[\dots\]
+\[a^{[4]} = g^{[4]}(z^{[4]}) = \hat{y}\]
+</p>
+
+<p>
+In general: 
+\[z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]}\]
+\[a^{[l]} = g^{[l]}(z^{[l]})\]
+</p>
+
+<p>
+Vectorized:
+Take z vectors for a training example and stack them as columns in \(Z\), similarly for \(A\).
+\[Z^{[l]} = W^{[l]}A^{[l-1]} + b^{[l]}\]
+\[A^{[l]} = g^{[l]}(Z^{[1]})\]
+And compute in a for loop, \(l=1,\dots,4\). This is one of the few cases where we still have a for loop.
+</p>
+
+<p>
+Think very systematically and carefully through your matrix dimensions!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org12e29a5" class="outline-3">
+<h3 id="org12e29a5"><span class="section-number-3">4.2.</span> Getting Your Matrix Dimensions Right</h3>
+<div class="outline-text-3" id="text-4-2">
+</div>
+<div id="outline-container-orgfaffa6f" class="outline-4">
+<h4 id="orgfaffa6f"><span class="section-number-4">4.2.1.</span> Single Training Example</h4>
+<div class="outline-text-4" id="text-4-2-1">
+<p>
+Suppose a fully connected network with \(n^{[0]} = 2, n^{[1]} = 3, n^{[2]} = 5, n^{[3]} = 4, n^{[4]} = 2, n^{[5]} = 1\).
+</p>
+
+<p>
+\[Z^{[1]} = W^{[1]}x + b^{[1]}\]
+\[(3,1) = (3,2)\times(2,1)\]
+\[(n^{[1]},1) = (n^{[1]}\times(n^{[0]},1)\]
+</p>
+
+<p>
+generally:
+\[W^{[l]}, dW^{[l]}: (n^{[l]}, n^{[l-1]}\]
+\[a^{[l]}: (n^{[l]}, 1)\]
+\[b^{[l]}: (n^{[l]}, 1)\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6a9cbf6" class="outline-4">
+<h4 id="org6a9cbf6"><span class="section-number-4">4.2.2.</span> Vectorized</h4>
+<div class="outline-text-4" id="text-4-2-2">
+<p>
+\[Z^{[l]} = W^{[l]}A^{[l-1]} + b^{[l]}\]
+\[Z^{[l]}, A^{[l]} : (n^{[l]}, m)\]
+\[b^{[l]}: (n^{[l]},1) \rightarrow_{broadcasting} (n^{[l]}, m)\].
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org469d1c7" class="outline-3">
+<h3 id="org469d1c7"><span class="section-number-3">4.3.</span> Why Deep Representations?</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Why do deep networks work so well? 
+Well, what is it computing? Suppose picture of face. First hidden layer might be sensitive to edges. Second layer sensitive to facial features like noses etc. Later layers full face. Simplification! Makes more sense when talking about Convnets.
+</p>
+
+<p>
+For audio, it might be | low level audio features | phonemes | words | sentences, phrases.
+</p>
+
+<p>
+This abstraction is SOMEWHAT related to the human brain. But let&rsquo;s forget about that now.
+</p>
+
+<p>
+Different Idea from Circuit theory. Informally: There are functions you can compute with a small L-layer deep neural network that shallower networks require exponentially more hidden units to compute. Can be seen straightforwardly when thinking about XOR. 
+</p>
+
+<p>
+Deep Learning is just a neural network rebranding.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org414f315" class="outline-3">
+<h3 id="org414f315"><span class="section-number-3">4.4.</span> Building Blocks of Neural Networks</h3>
+<div class="outline-text-3" id="text-4-4">
+<ul class="org-ul">
+<li>Forward step for layer \(l\):
+Input \(a^{[l-1]}\), output \(a^{[l]}\), use \(W^{[l]}, b^{[l]}\).</li>
+<li>Backward step for layer \(l\):
+Input \(da^{[l]}\), output \(da^{[l-1]}\), use cached \(z^{[l]}\) and \(W^{[l]}, b^{[l]}\). Also compute \(dW^{[l]}, db^{[l]}\).</li>
+</ul>
+
+<p>
+There is a nice computation graph for this process.
+</p>
+
+
+<div id="orgfd7cfe6" class="figure">
+<p><img src="./images/building_blocks.png" alt="building_blocks.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org060de56" class="outline-3">
+<h3 id="org060de56"><span class="section-number-3">4.5.</span> Forward and Backward Propagation</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+Forward like above.
+</p>
+
+<p>
+Backward: 
+\[dz^{[l]} = da^{[l]}*g^{[l]}\prime(z^{[l]})\] 
+\[dW^{[l]} = dz^{[l]}a^{[l-1]T}\]
+\[db^{[l]} = dz^{[l]}\]
+\[da^{[l-1]} = W^{[l]T}dz^{[l]}\]
+</p>
+
+<p>
+Why is there a &rsquo;*&rsquo; in the first line? Hmm. Ah! It&rsquo;s element-wise multiplication!
+</p>
+
+<p>
+\[dZ^{[l]} = dA^{[l]} * g^{[l]}\prime(Z^{[l]})\]
+\[dW^{[l]} = \frac{1}{m} dZ^{[l]}A^{[l-1]T}\]
+\(db^{[l]} = \frac{1}{m}\) <code>np.sum(</code> \(dZ^{[l]}\) <code>,axis=1, keepdims=True)</code>
+\[da^{[l-1]} = W^{[l]T}dz^{[l]}\]
+</p>
+
+
+<div id="org11a30a1" class="figure">
+<p><img src="./images/building_blocks2.png" alt="building_blocks2.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org533a0e0" class="outline-3">
+<h3 id="org533a0e0"><span class="section-number-3">4.6.</span> Hyperparameters and Parameters</h3>
+<div class="outline-text-3" id="text-4-6">
+</div>
+<div id="outline-container-orgd100167" class="outline-4">
+<h4 id="orgd100167"><span class="section-number-4">4.6.1.</span> Parameters</h4>
+<div class="outline-text-4" id="text-4-6-1">
+<p>
+\(W^{[1]},b^{[1]}, \dots\)
+</p>
+</div>
+</div>
+<div id="outline-container-orgc819a6f" class="outline-4">
+<h4 id="orgc819a6f"><span class="section-number-4">4.6.2.</span> Hyperparameters</h4>
+<div class="outline-text-4" id="text-4-6-2">
+<ul class="org-ul">
+<li>learning rate \(\alpha\)</li>
+<li>#iterations</li>
+<li>#hidden layers \(L\)</li>
+<li>#hidden units \(n^{[1]}, n^{[2]}, \dots\)</li>
+<li>Choice of activation function</li>
+</ul>
+
+<p>
+Later: Momentum, minibatch size, regularizations, \(\dots\)
+</p>
+
+<p>
+Applied Deep Learning is a very empirical process. You have to try out a lot of things and find out what works.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8c31663" class="outline-3">
+<h3 id="org8c31663"><span class="section-number-3">4.7.</span> What does Deep Learning have to do with the Human Brain?</h3>
+<div class="outline-text-3" id="text-4-7">
+<p>
+Not a whole lot. It is unclear to what extend the human brain might implement something like backprop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org729fadc" class="outline-3">
+<h3 id="org729fadc"><span class="section-number-3">4.8.</span> Notes from the Programming Exercise</h3>
+<div class="outline-text-3" id="text-4-8">
+<p>
+Remember that when we compute \(W X + b\) in python, it carries out broadcasting. For example, if: 
+</p>
+
+<p>
+\[ W = \begin{bmatrix}
+    j  & k  & l\\
+    m  & n & o \\
+    p  & q & r 
+\end{bmatrix}\;\;\; X = \begin{bmatrix}
+    a  & b  & c\\
+    d  & e & f \\
+    g  & h & i 
+\end{bmatrix} \;\;\; b =\begin{bmatrix}
+    s  \\
+    t  \\
+    u
+\end{bmatrix}\]
+</p>
+
+<p>
+Then \(WX + b\) will be:
+</p>
+
+<p>
+\[ WX + b = \begin{bmatrix}
+    (ja + kd + lg) + s  & (jb + ke + lh) + s  & (jc + kf + li)+ s\\
+    (ma + nd + og) + t & (mb + ne + oh) + t & (mc + nf + oi) + t\\
+    (pa + qd + rg) + u & (pb + qe + rh) + u & (pc + qf + ri)+ u \end{bmatrix}  \]
+</p>
+
+
+<div id="org7555e97" class="figure">
+<p><img src="./images/backprop_kiank.png" alt="backprop_kiank.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: By Me</p>
+<p class="date">Created: 2022-09-26 Mo 16:55</p>
+</div>
+</body>
+</html>
